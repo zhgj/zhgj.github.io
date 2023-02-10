@@ -3,7 +3,7 @@
     "tag": "payRequest",
     "minSendable": 1,
     "maxSendable": 10000000000,
-    "callback": "https://zhgj.github.io/",
+    "callback": "https://zhgj.github.io/.well-known/lnurlp/ipanda",
     "metadata": "[[\"text/plain\",\"iPanda's lightning address\"],[\"text/identifier\",\"ipanda@zhgj.github.io\"]]",
     "allowsNostr": true,
     "nostrPubkey": "dea6957048c7fc88495a227b6b04d2ee036938b74478321955d0aa59b77ee882",
