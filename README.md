@@ -37,6 +37,9 @@ https://metadata.nostr.com/
 * https://im.gurl.eu.org/
 * https://imgbb.com/
 
+#### ChatGPT
+http://chatai.yxboot.com/
+
 #### Other Links
 * https://api.oick.cn/random/api.php?type=pc
 * https://api.oick.cn/random/api.php?type=pe
