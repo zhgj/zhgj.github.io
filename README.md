@@ -38,7 +38,7 @@ https://metadata.nostr.com/
 * https://imgbb.com/
 
 #### ChatGPT
-http://chatai.yxboot.com/
+* http://chatai.yxboot.com/
 
 #### Other Links
 * https://api.oick.cn/random/api.php?type=pc
