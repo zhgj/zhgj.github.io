@@ -40,6 +40,9 @@ https://metadata.nostr.com/
 #### ChatGPT
 * http://chatai.yxboot.com/
 
+#### Bot APi
+* https://api.qingyunke.com/api.php?key=free&appid=0&msg=hello
+
 #### Other Links
 * https://api.oick.cn/random/api.php?type=pc
 * https://api.oick.cn/random/api.php?type=pe
