@@ -46,3 +46,7 @@ https://metadata.nostr.com/
 #### Other Links
 * https://api.oick.cn/random/api.php?type=pc
 * https://api.oick.cn/random/api.php?type=pe
+
+#### Backup
+* https://bafybeigrlkcfukopyfowubrbn7zahracf6kutbm26loaum6asfatetxcui.ipfs.w3s.link/avatar.jpg
+* https://bafybeif3u2v3cswrzjbhqijzpcz7lannjhz52ahhncvk3lafr44qxvkjdy.ipfs.w3s.link/banner.gif
