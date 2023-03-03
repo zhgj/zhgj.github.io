@@ -36,6 +36,7 @@ https://metadata.nostr.com/
 * https://img.vinua.cn/
 * https://im.gurl.eu.org/
 * https://imgbb.com/
+* https://www.hualigs.cn/
 
 #### ChatGPT
 * http://chatai.yxboot.com/
