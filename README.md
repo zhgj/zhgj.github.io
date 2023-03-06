@@ -22,9 +22,25 @@ NIP05里填写：`ipanda@zhgj.github.io`
 
 https://metadata.nostr.com/
 
-### 以上操作均需要在自己的Github账号下进行！！！文中`zhgj`、`ipanda`自觉替换为自己的！！！
+### 5. 有任何问题请关注我或加群提问
+
+My Pub Key:
+npub1m6nf2uzgcl7gsj26yfakkpxjacpkjw9hg3uryx246z49ndm7azpqm2ww5v
+
+Amethyst Channel：
+* New:  
+note1f95z092sm3k8qtzvshy3s5zuun82eqgujc6n4956vrtt2u58xv5s6cg4ql
+* Old:  
+note1kpjpkqxep5yx0g84jy5pz8ypakqmcsj52era75rrehqkq3zwn7hsqmx92t
+
+### 以上操作均需要在自己的Github账号下进行！！！文中`zhgj`、`ipanda`<font color='red'>自觉替换</font>为自己的！！！
+---
+<details><summary>CLICK ME</summary>
 
 ### 以下信息和上面不相关，请忽略！！！
+
+#### Global relays
+* https://nostr.watch/relays/find/
 
 #### Useful Links：
 * https://open.iciba.com/dsapi/
@@ -42,12 +58,14 @@ https://metadata.nostr.com/
 * http://chatai.yxboot.com/
 
 #### Bot APi
-* https://api.qingyunke.com/api.php?key=free&appid=0&msg=hello
+* https://api.qingyunke.com/api.php?key=free&appid=0&msg=joke
 
 #### Other Links
 * https://api.oick.cn/random/api.php?type=pc
 * https://api.oick.cn/random/api.php?type=pe
+* https://doc.unift.xyz/
 
 #### Backup
 * https://bafybeigrlkcfukopyfowubrbn7zahracf6kutbm26loaum6asfatetxcui.ipfs.w3s.link/avatar.jpg
 * https://bafybeif3u2v3cswrzjbhqijzpcz7lannjhz52ahhncvk3lafr44qxvkjdy.ipfs.w3s.link/banner.gif
+</details>
