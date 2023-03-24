@@ -53,12 +53,17 @@ note1kpjpkqxep5yx0g84jy5pz8ypakqmcsj52era75rrehqkq3zwn7hsqmx92t
 * https://im.gurl.eu.org/
 * https://imgbb.com/
 * https://www.hualigs.cn/
+* https://jpg.dog/
+* https://www.hd-r.cn/
 
 #### ChatGPT
 * http://chatai.yxboot.com/
 
 #### Bot APi
 * https://api.qingyunke.com/api.php?key=free&appid=0&msg=joke
+
+#### Temp Mail
+* https://etempmail.com/
 
 #### Other Links
 * https://api.oick.cn/random/api.php?type=pc
