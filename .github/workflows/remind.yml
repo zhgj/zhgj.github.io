@@ -39,14 +39,18 @@ jobs:
             # 将提醒时间转换为时间戳
             reminder_timestamp=$(date -d "$reminder_time" +%s)
 
+            # 计算时间差（单位：秒）
+            time_diff=$((current_timestamp - reminder_timestamp))
+
             # 打印调试信息
             echo "Reminder time (Local): $reminder_time"
             echo "Current time (Local): $current_time"
             echo "Reminder time (Timestamp): $reminder_timestamp"
             echo "Current time (Timestamp): $current_timestamp"
+            echo "Time difference (seconds): $time_diff"
 
-            # 检查提醒时间是否到了
-            if [[ "$reminder_timestamp" -le "$current_timestamp" ]]; then
+            # 检查提醒时间是否到了，并且时间差不超过 10 分钟（600 秒）
+            if [[ "$reminder_timestamp" -le "$current_timestamp" && "$time_diff" -le 600 ]]; then
               # 发送提醒消息的接口调用
               echo "Sending message: title = $title, content = $content"
               curl -X GET "https://nodered.glwsq.cn/weixin2?token=xuiidfcpgi&group=true&content=$(echo -e "${title}\n${content}" | sed 's/^[[:space:]]*\n//g' | jq -sRr @uri)"
