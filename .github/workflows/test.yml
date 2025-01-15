@@ -1,0 +1,16 @@
+name: Example GitHub Actions Workflow
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+ 
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+ 
+    - name: Send GET Request with Curl
+      run: |
+        curl -G -d "token=xuiidfcpgi&group=true&content=value2" https://nodered.glwsq.cn/weixin2
