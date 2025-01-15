@@ -16,7 +16,6 @@ jobs:
         run: |
           last_line=$(tail -n 1 remind)
           echo "::set-output name=line::$last_line"
+
       - name: Send to API
-        uses: appleboy/curl-action@master
-        with:
-          url: https://nodered.glwsq.cn/weixin2?token=xuiidfcpgi&group=true&content=${{ steps.read_last_line.outputs.line }}
+        run: curl -G -d "token=xuiidfcpgi&group=true&content=${{ steps.read_last_line.outputs.line }}" https://nodered.glwsq.cn/weixin2
