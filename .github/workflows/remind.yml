@@ -38,6 +38,10 @@ jobs:
             # 获取当前 UTC 时间
             current_time_utc=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
+            # 打印调试信息
+            echo "Reminder time (UTC): $reminder_time_utc"
+            echo "Current time (UTC): $current_time_utc"
+
             # 检查提醒时间是否到了
             if [[ "$reminder_time_utc" == "$current_time_utc" ]]; then
               # 发送提醒消息的接口调用
