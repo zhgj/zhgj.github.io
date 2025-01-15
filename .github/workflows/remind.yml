@@ -50,7 +50,7 @@ jobs:
             echo "Time difference (seconds): $time_diff"
 
             # 检查提醒时间是否到了，并且时间差不超过 10 分钟（600 秒）
-            if [[ "$reminder_timestamp" -le "$current_timestamp" && "$time_diff" -le 600 ]]; then
+            if [[ "$reminder_timestamp" -le "$current_timestamp" && "$time_diff" -le 1800 ]]; then
               # 发送提醒消息的接口调用
               echo "Sending message: title = $title, content = $content"
               curl -X GET "https://nodered.glwsq.cn/weixin2?token=xuiidfcpgi&group=true&content=$(echo -e "${title}\n${content}" | sed 's/^[[:space:]]*\n//g' | jq -sRr @uri)"
