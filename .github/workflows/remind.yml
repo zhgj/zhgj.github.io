@@ -1,0 +1,47 @@
+name: remind
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # 每 5 分钟执行一次
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  reminder:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 检出仓库内容
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # 设置时区为东八区
+      - name: Set timezone to Asia/Shanghai
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+
+      # 解析 CSV 文件
+      - name: Parse CSV and Send reminders
+        run: |
+          # 安装必要的工具
+          sudo apt-get install -y jq
+
+          # 读取 CSV 文件内容
+          while IFS=, read -r title content reminder_time; do
+            # 跳过标题行
+            if [[ "$title" == "标题" ]]; then
+              continue
+            fi
+            
+            # 格式化时间为 UTC 时间（GitHub Actions 使用 UTC）
+            reminder_time_utc=$(date -d "$reminder_time" -u +"%Y-%m-%dT%H:%M:%SZ")
+            
+            # 获取当前 UTC 时间
+            current_time_utc=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+            # 检查提醒时间是否到了
+            if [[ "$reminder_time_utc" == "$current_time_utc" ]]; then
+              # 发送提醒消息的接口调用
+              #curl -X GET "https://your-api.com/send?title=${title}&content=${content}"
+              curl -X GET "https://nodered.glwsq.cn/weixin2?token=xuiidfcpgi&group=true&content=${title}\n${content}"
+            fi
+          done < "remind.csv"  # CSV 文件路径
