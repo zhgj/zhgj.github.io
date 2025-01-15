@@ -32,20 +32,22 @@ jobs:
               continue
             fi
             
-            # 格式化时间为 UTC 时间（GitHub Actions 使用 UTC）
-            reminder_time_utc=$(date -d "$reminder_time" -u +"%Y-%m-%dT%H:%M:%SZ")
-            
-            # 获取当前 UTC 时间
-            current_time_utc=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            # 获取当前时间的时间戳（假设系统时区已设置为东八区）
+            current_time=$(date +"%Y-%m-%d %H:%M:%S")
+            current_timestamp=$(date -d "$current_time" +%s)
+
+            # 将提醒时间转换为时间戳
+            reminder_timestamp=$(date -d "$reminder_time" +%s)
 
             # 打印调试信息
-            echo "Reminder time (UTC): $reminder_time_utc"
-            echo "Current time (UTC): $current_time_utc"
+            echo "Reminder time (Local): $reminder_time"
+            echo "Current time (Local): $current_time"
+            echo "Reminder time (Timestamp): $reminder_timestamp"
+            echo "Current time (Timestamp): $current_timestamp"
 
             # 检查提醒时间是否到了
-            if [[ "$reminder_time_utc" == "$current_time_utc" ]]; then
+            if [[ "$reminder_timestamp" -le "$current_timestamp" ]]; then
               # 发送提醒消息的接口调用
-              #curl -X GET "https://your-api.com/send?title=${title}&content=${content}"
               curl -X GET "https://nodered.glwsq.cn/weixin2?token=xuiidfcpgi&group=true&content=${title}\n${content}"
             fi
           done < "remind.csv"  # CSV 文件路径
