@@ -19,7 +19,10 @@ jobs:
     - name: Write String to File
       run: |
         echo "你想要写入的字符串内容" > remind
-        
+    
+    - name: Commit remind File
+      uses: stefanzweifel/git-auto-commit-action@v5
+    
     - name: Read Last Line of File
       id: read_last_line
       run: |
