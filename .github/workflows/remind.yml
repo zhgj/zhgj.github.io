@@ -72,7 +72,7 @@ jobs:
       # 修改发送状态
       - name: Update Send Status to File
         run: |
-          cp updated_remind.csv remind.csv
+          mv updated_remind.csv remind.csv
 
       # 修改状态后的文件提交到仓库
       - name: Commit remind.csv File
