@@ -2,15 +2,30 @@ name: Example GitHub Actions Workflow
 
 on:
   schedule:
-    - cron: '0 0 16 * *'
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
  
 jobs:
   example-job:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
- 
+      uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          remind
+        sparse-checkout-cone-mode: false
+        
+    - name: Write String to File
+      run: |
+        echo "你想要写入的字符串内容" > remind
+        
+    - name: Read Last Line of File
+      id: read_last_line
+      run: |
+        last_line=$(tail -n 1 remind)
+        echo "::set-output name=line::$last_line"
+          
     - name: Send GET Request with Curl
       run: |
-        curl -G -d "token=xuiidfcpgi&group=true&content=value2" https://nodered.glwsq.cn/weixin2
+        curl -G -d "token=xuiidfcpgi&group=true&content=${{ steps.read_last_line.outputs.line }}" https://nodered.glwsq.cn/weixin2
