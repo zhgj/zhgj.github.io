@@ -37,9 +37,9 @@ jobs:
             fi
 
             # 如果状态为 "已发送"，跳过当前提醒
-            if [[ "$status" == "已发送" ]]; then
-              continue
-            fi
+            #if [[ "$status" == "已发送" ]]; then
+            #  continue
+            #fi
             
             # 获取当前时间的时间戳（假设系统时区已设置为东八区）
             current_time=$(date +"%Y-%m-%d %H:%M:%S")
@@ -63,13 +63,16 @@ jobs:
               # 发送提醒消息的接口调用
               echo "Sending message: title = $title, content = $content"
               curl -X GET "https://nodered.glwsq.cn/weixin2?token=xuiidfcpgi&group=true&content=$(echo -e "${title}\n${content}" | sed 's/^[[:space:]]*\n//g' | jq -sRr @uri)"
+              echo "$title,$content,$reminder_time,已发送" >> updated_remind.csv
+            else
+              echo "$title,$content,$reminder_time,$status" >> updated_remind.csv
             fi
           done < "remind.csv"  # CSV 文件路径
 
       # 修改发送状态
       - name: Update Send Status to File
         run: |
-          sed -i 's/未发送/已发送/g' remind.csv
+          cp updated_remind.csv remind.csv
 
       # 修改状态后的文件提交到仓库
       - name: Commit remind.csv File
