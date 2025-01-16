@@ -72,6 +72,7 @@ jobs:
       # 修改发送状态
       - name: Update Send Status to File
         run: |
+          sed -i '1i标题,内容,提醒时间,状态' updated_remind.csv
           mv updated_remind.csv remind.csv
 
       # 修改状态后的文件提交到仓库
