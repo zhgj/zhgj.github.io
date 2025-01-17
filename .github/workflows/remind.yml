@@ -57,7 +57,7 @@ jobs:
             echo "Reminder time (Timestamp): $reminder_timestamp"
             echo "Current time (Timestamp): $current_timestamp"
             echo "Time difference (seconds): $time_diff"
-            echo "Status $status"
+            echo "Status $status呀"
 
             # 检查提醒时间是否到了
             if [[ "$reminder_timestamp" -le "$current_timestamp" && "$status" == "未发送\r" && "$time_diff" -le 3600 ]]; then
