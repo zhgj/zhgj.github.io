@@ -66,7 +66,7 @@ jobs:
             if [[ "$reminder_timestamp" -le "$current_timestamp" && "$status" == "未发送" && "$time_diff" -le 3600 ]]; then
               # 发送提醒消息的接口调用
               echo "Sending message: title = $title, content = $content"
-              curl -X GET "https://nodered.glwsq.cn/weixin2?token=xuiidfcpgi&group=true&content=$(echo -e "${title}\n${content}\n${reminder_time}" | tr -d '\n' | jq -sRr @uri)"
+              curl -X GET "https://nodered.glwsq.cn/weixin2?token=xuiidfcpgi&group=true&content=$(echo -e "${title}\n${content}\n${reminder_time}" | sed 's/\n$//' | jq -sRr @uri)"
               echo "$title,$content,$reminder_time,已发送" >> updated_remind.csv
             else
               echo "$title,$content,$reminder_time,$status" >> updated_remind.csv
