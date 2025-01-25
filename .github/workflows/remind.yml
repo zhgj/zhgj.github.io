@@ -63,7 +63,7 @@ jobs:
             echo "Status后 $status呀"
 
             # 检查提醒时间是否到了
-            if [[ "$reminder_timestamp" -le "$current_timestamp" && "$status" == "未发送" && "$time_diff" -le 3600 ]]; then
+            if [[ "$reminder_timestamp" -le "$current_timestamp" && "$status" == "未发送" && "$time_diff" -le 86400 ]]; then
               # 发送提醒消息的接口调用
               echo "Sending message: title = $title, content = $content"
               curl -X GET "https://nodered.glwsq.cn/weixin2?token=xuiidfcpgi&group=true&content=$(echo -e "${title}\n${content}\n${reminder_time}" | sed 's/\n$//' | jq -sRr @uri)"
