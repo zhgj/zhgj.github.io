@@ -30,9 +30,10 @@ jobs:
           sudo cat /etc/hosts
           sudo cat hosts_dynamics
           sudo chmod 777 /etc/hosts
-          sudo ls -al /etc
+          # sudo ls -al /etc
           sudo cat hosts_dynamics >> /etc/hosts
           sudo cat /etc/hosts
+          sleep 5
           sudo curl -G http://res.freemyip.com:5281/apprise --data-urlencode "title=你好" --data-urlencode "body=侬好"
 
       # 解析 CSV 文件
