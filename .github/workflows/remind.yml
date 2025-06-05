@@ -33,6 +33,7 @@ jobs:
           sudo ls -al /etc
           sudo cat hosts_dynamics >> /etc/hosts
           sudo cat /etc/hosts
+          sudo curl -G http://res.freemyip.com:5281/apprise --data-urlencode "title=你好" --data-urlencode "body=侬好"
 
       # 解析 CSV 文件
       - name: Parse CSV and Send reminders
