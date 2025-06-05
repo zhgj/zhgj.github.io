@@ -79,7 +79,7 @@ jobs:
               # 发送提醒消息的接口调用
               echo "Sending message: title = $title, content = $content"
               curl -X GET "https://nodered.glwsq.cn/weixin2?token=xuiidfcpgi&group=true&content=$(echo -e "${title}\n${content}\n${reminder_time}" | sed 's/\n$//' | jq -sRr @uri)"
-              sudo curl -G http://res.freemyip.com:5281/apprise --data-urlencode "title=${title}" --data-urlencode "body=${content}\n${reminder_time}"
+              sudo curl -G http://res.freemyip.com:5281/apprise --data-urlencode "title=${title}" --data-urlencode "body=${reminder_time}"
               echo "$title,$content,$reminder_time,已发送" >> updated_remind.csv
             else
               echo "$title,$content,$reminder_time,$status" >> updated_remind.csv
