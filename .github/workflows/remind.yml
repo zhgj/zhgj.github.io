@@ -16,6 +16,7 @@ jobs:
         with:
           sparse-checkout: |
             remind.csv
+            hosts_dynamics
           sparse-checkout-cone-mode: false
 
       # 设置时区为东八区
