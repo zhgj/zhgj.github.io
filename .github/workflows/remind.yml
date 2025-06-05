@@ -23,9 +23,11 @@ jobs:
         run: |
           sudo timedatectl set-timezone Asia/Shanghai
 
-      # 显示、设置hosts
+      # 显示并设置hosts
       - name: Show and set hosts
         run: |
+          sudo cat /etc/hosts
+          sudo cat hosts_dynamics >> /etc/hosts
           sudo cat /etc/hosts
 
       # 解析 CSV 文件
