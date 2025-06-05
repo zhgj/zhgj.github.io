@@ -33,12 +33,11 @@ jobs:
           #sudo ls -al /etc
           sudo cat hosts_dynamics >> /etc/hosts
           sudo cat /etc/hosts
-          #sleep 5
 
       # 解析 CSV 文件
       - name: Parse CSV and Send reminders
         run: |
-          sudo curl -G http://res.freemyip.com:5281/apprise --data-urlencode "title=你好" --data-urlencode "body=侬好"
+          #sudo curl -G http://res.freemyip.com:5281/apprise --data-urlencode "title=你好" --data-urlencode "body=侬好"
           # 安装必要的工具
           sudo apt-get install -y jq
 
@@ -80,6 +79,7 @@ jobs:
               # 发送提醒消息的接口调用
               echo "Sending message: title = $title, content = $content"
               curl -X GET "https://nodered.glwsq.cn/weixin2?token=xuiidfcpgi&group=true&content=$(echo -e "${title}\n${content}\n${reminder_time}" | sed 's/\n$//' | jq -sRr @uri)"
+              sudo curl -G http://res.freemyip.com:5281/apprise --data-urlencode "title=${title}" --data-urlencode "body=${content}\n${reminder_time}"
               echo "$title,$content,$reminder_time,已发送" >> updated_remind.csv
             else
               echo "$title,$content,$reminder_time,$status" >> updated_remind.csv
