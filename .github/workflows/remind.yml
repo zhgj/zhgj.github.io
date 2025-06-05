@@ -26,8 +26,10 @@ jobs:
       # 显示并设置hosts
       - name: Show and set hosts
         run: |
-          sudo ls -al /etc
           sudo cat /etc/hosts
+          sudo cat hosts_dynamics
+          sudo chmod 777 /etc/hosts
+          sudo ls -al /etc
           sudo cat hosts_dynamics >> /etc/hosts
           sudo cat /etc/hosts
 
