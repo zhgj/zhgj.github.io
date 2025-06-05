@@ -27,18 +27,18 @@ jobs:
       # 显示并设置hosts
       - name: Show and set hosts
         run: |
-          sudo cat /etc/hosts
-          sudo cat hosts_dynamics
+          #sudo cat /etc/hosts
+          #sudo cat hosts_dynamics
           sudo chmod 777 /etc/hosts
-          # sudo ls -al /etc
+          #sudo ls -al /etc
           sudo cat hosts_dynamics >> /etc/hosts
           sudo cat /etc/hosts
-          sleep 5
+          #sleep 5
 
       # 解析 CSV 文件
       - name: Parse CSV and Send reminders
         run: |
-          sudo curl -G http://res.freemyip.com:5281/apprise --data-urlencode "title=你好" --data-urlencode "body=侬好"
+          #sudo curl -G http://res.freemyip.com:5281/apprise --data-urlencode "title=你好" --data-urlencode "body=侬好"
           # 安装必要的工具
           sudo apt-get install -y jq
 
