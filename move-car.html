@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>挪车服务</title>
-<meta name="description" content="一键挪车通知系统">
 <style>
   :root {
     --primary: #e53935;
@@ -12,363 +11,245 @@
     --bg: #fafafa;
     --card: #ffffff;
     --text: #212121;
-    --text-secondary: #757575;
+    --text-2: #757575;
     --border: #e0e0e0;
-    --shadow: 0 2px 8px rgba(0,0,0,0.08);
-    --radius: 12px;
+    --shadow: 0 2px 10px rgba(0,0,0,.08);
+    --radius: 14px;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
   }
-  .container {
-    max-width: 420px;
-    width: 100%;
-    padding: 24px 16px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .wrap { max-width:420px; width:100%; padding:24px 16px 32px; min-height:100vh; display:flex; flex-direction:column; }
+  .hero { text-align:center; padding:28px 12px 20px; }
+  .hero-icon { font-size:60px; line-height:1; margin-bottom:14px; }
+  .hero h1 { font-size:30px; font-weight:800; color:var(--primary); letter-spacing:1px; margin-bottom:10px; }
+  .hero p { color:var(--text-2); font-size:15px; line-height:1.7; }
+  .card { background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; margin-bottom:14px; }
+  .plate {
+    display:flex; align-items:center; justify-content:center; gap:14px;
+    padding:20px; background:#f5f5f5; border-radius:10px; margin-bottom:18px;
   }
-  .card {
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 24px;
-    width: 100%;
-    margin-bottom: 16px;
-  }
-  .header {
-    text-align: center;
-    padding: 32px 16px 24px;
-  }
-  .header-icon {
-    font-size: 56px;
-    margin-bottom: 12px;
-  }
-  .header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 8px;
-  }
-  .header p {
-    color: var(--text-secondary);
-    font-size: 14px;
-    line-height: 1.6;
-  }
-  .phone-box {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    padding: 20px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    margin: 16px 0;
-  }
-  .phone-icon { font-size: 28px; }
-  .phone-text {
-    font-size: 20px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    color: var(--text);
-  }
+  .plate-icon { font-size:30px; }
+  .plate-text { font-size:22px; font-weight:700; letter-spacing:3px; }
   .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 16px 32px;
-    font-size: 18px;
-    font-weight: 600;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.2s;
-    width: 100%;
-    text-decoration: none;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    width:100%; padding:17px 24px; font-size:18px; font-weight:700;
+    border:none; border-radius:50px; cursor:pointer; transition:transform .12s, background .2s;
+    font-family:inherit;
   }
-  .btn:active { transform: scale(0.98); }
-  .btn-primary {
-    background: var(--primary);
-    color: white;
-    box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+  .btn:active { transform:scale(.975); }
+  .btn-main { background:var(--primary); color:#fff; box-shadow:0 5px 16px rgba(229,57,53,.32); }
+  .btn-main:hover { background:var(--primary-dark); }
+  .btn-main[disabled] { background:#bdbdbd; box-shadow:none; cursor:not-allowed; }
+  .btn-ghost { background:transparent; color:var(--text-2); border:1px solid var(--border); font-size:14px; padding:11px 20px; }
+  .status { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; color:var(--text-2); font-size:13px; }
+  .dot { width:9px; height:9px; border-radius:50%; background:#9e9e9e; }
+  .dot.on { background:#43a047; } .dot.off { background:#e53935; } .dot.wait { background:#fb8c00; }
+  .result { margin-top:16px; padding:16px; border-radius:10px; text-align:center; font-size:14px; line-height:1.65; display:none; }
+  .r-ok { background:#e8f5e9; color:#2e7d32; }
+  .r-err { background:#ffebee; color:#c62828; }
+  .r-info { background:#e3f2fd; color:#1565c0; }
+  .spin { width:30px; height:30px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:sp .7s linear infinite; margin:0 auto 12px; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+  .foot { margin-top:auto; text-align:center; padding:20px 10px 4px; color:var(--text-2); font-size:12px; line-height:1.8; }
+  .foot code { background:#eee; padding:1px 5px; border-radius:4px; font-size:11px; }
+  details { margin-top:6px; }
+  summary { cursor:pointer; color:var(--text-2); font-size:13px; padding:10px; list-style:none; }
+  summary::-webkit-details-marker { display:none; }
+  .field { margin-bottom:12px; }
+  .field label { display:block; font-size:13px; color:var(--text-2); margin-bottom:5px; }
+  .field input {
+    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px;
+    font-size:15px; font-family:inherit; background:#fff; color:var(--text);
   }
-  .btn-primary:hover { background: var(--primary-dark); }
-  .btn-outline {
-    background: transparent;
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    font-size: 14px;
-    padding: 10px 24px;
-  }
-  .status {
-    text-align: center;
-    padding: 16px;
-    margin-top: 16px;
-  }
-  .status-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 8px;
-  }
-  .status-dot.online { background: #4caf50; }
-  .status-dot.offline { background: #f44336; }
-  .result {
-    margin-top: 16px;
-    padding: 16px;
-    text-align: center;
-    border-radius: 8px;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-  .result.success { background: #e8f5e9; color: #2e7d32; }
-  .result.error { background: #ffebee; color: #c62828; }
-  .result.info { background: #e3f2fd; color: #1565c0; }
-  .footer {
-    text-align: center;
-    padding: 24px;
-    color: var(--text-secondary);
-    font-size: 12px;
-    margin-top: auto;
-  }
-  #loading {
-    display: none;
-    text-align: center;
-    padding: 24px;
-  }
-  #loading .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid var(--border);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    margin: 0 auto 12px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .field input:focus { outline:none; border-color:var(--primary); }
+  .row { display:flex; gap:9px; } .row .btn { flex:1; }
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <div class="header-icon">🚗</div>
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-icon">🚗</div>
     <h1>一键挪车</h1>
-    <p>您的车辆正在挡住我的通行。<br>点击下方按钮发送挪车通知。</p>
+    <p>您的车辆挡住了我的通行<br>点一下按钮，车主会立刻收到通知</p>
   </div>
 
   <div class="card">
-    <div class="phone-box">
-      <span class="phone-icon">📞</span>
-      <span class="phone-text" id="phone-display">177****6606</span>
+    <div class="plate">
+      <span class="plate-icon">📞</span>
+      <span class="plate-text" id="phone">177****6606</span>
     </div>
-    <button class="btn btn-primary" onclick="sendNotify()">
-      📬 通知车主挪车
-    </button>
-    <div id="loading">
-      <div class="spinner"></div>
-      <p style="color:var(--text-secondary); font-size:14px;">正在发送通知...</p>
+    <button class="btn btn-main" id="sendBtn">📬 通知车主挪车</button>
+    <div id="loading" style="display:none;">
+      <div style="margin-top:18px;"><div class="spin"></div></div>
+      <p style="color:var(--text-2);font-size:14px;">正在发送通知…</p>
     </div>
-    <div id="result" class="result info" style="display:none;"></div>
-  </div>
-
-  <div class="card">
-    <button class="btn btn-outline" onclick="showAdminPanel()">
-      ⚙️ 车辆设置 & 通知测试
-    </button>
-    <div id="admin-panel" style="display:none; margin-top:16px;">
-      <div style="margin-bottom:12px;">
-        <label for="phone-setting" style="font-size:14px; color: var(--text-secondary);">尾号显示：</label>
-        <input id="phone-setting" type="text" value="177****6606"
-          style="display:block; margin-top:4px; padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:16px;">
-      </div>
-      <div style="margin-bottom:12px;">
-        <label for="api-setting" style="font-size:14px; color: var(--text-secondary);">通知 API：</label>
-        <input id="api-setting" type="text" placeholder="留空使用默认"
-          style="display:block; margin-top:4px; padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:14px;">
-        <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-          默认地址: <code>http://res.freemyip.com:5281/apprise</code><br>
-          如需修改请在 <code>⚙️ 车辆设置</code> 中配置并保存
-        </div>
-      </div>
-      <div style="display:flex; gap:8px;">
-        <button class="btn btn-outline" onclick="saveSettings()" style="flex:1;">💾 保存</button>
-        <button class="btn btn-outline" onclick="testNotify()" style="flex:1;">🧪 测试</button>
-      </div>
-    </div>
+    <div id="result" class="result"></div>
   </div>
 
   <div class="status">
-    <span class="status-dot online" id="conn-dot"></span>
-    <span id="conn-text" style="font-size: 13px;">正在检测网络状态...</span>
+    <span class="dot wait" id="dot"></span>
+    <span id="connText">正在检测通知服务…</span>
   </div>
 
-  <div class="footer">
-    挪车通知系统 · 数据不会上传到任何第三方<br>
-    <span style="font-size:11px; opacity:0.6;">Powered by GitHub Pages + Apprise</span>
+  <div class="card" style="padding:6px 12px;">
+    <details id="admin">
+      <summary>⚙️ 车主设置</summary>
+      <div style="padding:6px 4px 12px;">
+        <div class="field">
+          <label for="phoneIn">显示的车牌尾号 / 电话尾号</label>
+          <input id="phoneIn" type="text" value="177****6606">
+        </div>
+        <div class="field">
+          <label for="topicIn">通知频道 (ntfy topic)</label>
+          <input id="topicIn" type="text">
+        </div>
+        <div class="row">
+          <button class="btn btn-ghost" id="saveBtn">💾 保存</button>
+          <button class="btn btn-ghost" id="testBtn">🧪 测试</button>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="foot">
+    挪车通知系统 · GitHub Pages + ntfy + Apprise<br>
+    <span style="opacity:.65">任何人都可以扫码发送，请勿恶意骚扰</span>
   </div>
 </div>
 
 <script>
-// ====== Configuration (stored in localStorage for persistence) ======
-const DEFAULT_API_URL = 'http://res.freemyip.com:5281/apprise';
-const STORAGE_KEY_API = 'movecar_api_url';
-const STORAGE_KEY_PHONE = 'movecar_phone_tail';
+// ===================== 配置 =====================
+// ntfy topic 为公开队列，浏览器匿名写入；4gwifi 上的轮询器读取并转发到 5281
+const TOPIC = 'movecar-zh-gj';
+const NTFY_BASE = 'https://ntfy.sh';
+const MSG_PREFIX = 'MOVECAR|';
+const DEFAULT_PHONE = '177****6606';
 
-function getApiUrl() {
-  return localStorage.getItem(STORAGE_KEY_API) || DEFAULT_API_URL;
+const K_TOPIC = 'movecar_topic';
+const K_PHONE = 'movecar_phone';
+
+// ===================== 本地设置 =====================
+function getTopic() { return localStorage.getItem(K_TOPIC) || TOPIC; }
+function getPhone() { return localStorage.getItem(K_PHONE) || DEFAULT_PHONE; }
+
+function applySettings() {
+  document.getElementById('phone').textContent = getPhone();
+  document.getElementById('phoneIn').value = getPhone();
+  document.getElementById('topicIn').value = getTopic();
+}
+applySettings();
+
+// ===================== 核心：写入 ntfy 队列 =====================
+// 用 text/plain 触发 simple request，避免预检；同时 ntfy 支持完整 CORS。
+async function publish(bodyText) {
+  const url = `${NTFY_BASE}/${getTopic()}`;
+  const payload = MSG_PREFIX + bodyText;
+
+  const resp = await fetch(url, {
+    method: 'POST',
+    mode: 'cors',
+    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body: payload
+  });
+
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  const data = await resp.json().catch(() => ({}));
+  return data.id || 'ok';
 }
 
-function getPhoneTail() {
-  return localStorage.getItem(STORAGE_KEY_PHONE) || '177****6606';
-}
-
-// Load settings on init
-(function init() {
-  const phoneTail = getPhoneTail();
-  document.getElementById('phone-display').textContent = phoneTail;
-  const apiUrl = getApiUrl();
-  document.getElementById('api-setting').value = (apiUrl === DEFAULT_API_URL) ? '' : apiUrl;
-  document.getElementById('phone-setting').value = phoneTail;
-})();
-
-// ====== Send notification ======
+// ===================== 发送 =====================
 async function sendNotify() {
-  const resultDiv = document.getElementById('result');
-  const loadingDiv = document.getElementById('loading');
+  const btn = document.getElementById('sendBtn');
+  const loading = document.getElementById('loading');
+  const result = document.getElementById('result');
 
-  resultDiv.style.display = 'none';
-  loadingDiv.style.display = 'block';
+  btn.disabled = true;
+  loading.style.display = 'block';
+  result.style.display = 'none';
 
-  const apiUrl = getApiUrl();
-  const phoneTail = getPhoneTail();
-
-  try {
-    const payload = {
-      title: '🚙 挪车通知',
-      body: `您的爱车(${phoneTail})正在挡住我通行，请帮忙挪车`,
-      type: 'warning'
-    };
-
-    const resp = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    loadingDiv.style.display = 'none';
-    resultDiv.style.display = 'block';
-
-    if (resp.ok) {
-      const data = await resp.json();
-      resultDiv.className = 'result success';
-      resultDiv.innerHTML = `
-        <div style="font-size:24px;margin-bottom:8px;">✅</div>
-        <strong>通知已发送！</strong><br>
-        车主已收到挪车通知，请等待回应。<br>
-        <span style="font-size:12px;opacity:0.7;">${data.status === 'duplicate' ? '(去重: 已在1800秒内发送过)' : data.message || '已投递到通知渠道'}</span>
-      `;
-    } else {
-      resultDiv.className = 'result error';
-      resultDiv.innerHTML = `<strong>发送失败 (${resp.status})</strong><br>${resp.statusText || '请检查网络连接'}`;
-    }
-  } catch (err) {
-    loadingDiv.style.display = 'none';
-    resultDiv.style.display = 'block';
-    resultDiv.className = 'result error';
-    resultDiv.innerHTML = `<strong>⚠️ 连接失败</strong><br>${err.message}<br>
-      <span style="font-size:12px;opacity:0.8;">请检查网络或稍后重试</span>`;
-  }
-}
-
-// ====== Admin helpers ======
-function showAdminPanel() {
-  const panel = document.getElementById('admin-panel');
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-}
-
-function saveSettings() {
-  const phoneTail = document.getElementById('phone-setting').value.trim();
-  const apiUrlVal = document.getElementById('api-setting').value.trim();
-  localStorage.setItem(STORAGE_KEY_PHONE, phoneTail || '177****6606');
-  document.getElementById('phone-display').textContent = phoneTail || '177****6606';
-
-  if (apiUrlVal) {
-    localStorage.setItem(STORAGE_KEY_API, apiUrlVal);
-  } else {
-    localStorage.removeItem(STORAGE_KEY_API);
-  }
-
-  const resultDiv = document.getElementById('result');
-  resultDiv.className = 'result success';
-  resultDiv.style.display = 'block';
-  resultDiv.innerHTML = '✅ 设置已保存';
-  setTimeout(() => resultDiv.style.display = 'none', 2000);
-}
-
-async function testNotify() {
-  const resultDiv = document.getElementById('result');
-  const loadingDiv = document.getElementById('loading');
-  document.getElementById('result').style.display = 'none';
-  loadingDiv.style.display = 'block';
-
-  const apiUrl = getApiUrl();
+  const body = `您的爱车(${getPhone()})正在挡住我通行，请帮忙挪车`;
 
   try {
-    const resp = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title: '🧪 测试通知',
-        body: `这是一条测试消息，发送于 ${new Date().toLocaleTimeString()}`,
-        type: 'info'
-      })
-    });
-
-    loadingDiv.style.display = 'none';
-    resultDiv.style.display = 'block';
-
-    if (resp.ok) {
-      resultDiv.className = 'result success';
-      resultDiv.innerHTML = '✅ 测试通知已发送至 Apprise 服务<br><span style="font-size:12px">请到企微/钉钉查看通知是否到达</span>';
-    } else {
-      resultDiv.className = 'result error';
-      resultDiv.innerHTML = `❌ 测试失败 (HTTP ${resp.status})<br>请检查 API 地址和 CORS 配置`;
-    }
+    const id = await publish(body);
+    loading.style.display = 'none';
+    result.className = 'result r-ok';
+    result.style.display = 'block';
+    result.innerHTML =
+      '<div style="font-size:26px;margin-bottom:8px;">✅</div>' +
+      '<strong>通知已发送！</strong><br>' +
+      '车主已收到挪车通知，正在赶来<br>' +
+      '<span style="font-size:11px;opacity:.6">ID: ' + id + '</span>';
+    checkHealth();
   } catch (err) {
-    loadingDiv.style.display = 'none';
-    resultDiv.style.display = 'block';
-    resultDiv.className = 'result error';
-    resultDiv.innerHTML = `❌ 测试失败<br>${err.message}<br>请检查 Apprise 服务和 CORS 配置`;
+    loading.style.display = 'none';
+    result.className = 'result r-err';
+    result.style.display = 'block';
+    result.innerHTML =
+      '<div style="font-size:26px;margin-bottom:8px;">⚠️</div>' +
+      '<strong>发送失败</strong><br>' +
+      String(err && err.message ? err.message : err) + '<br>' +
+      '<span style="font-size:12px;opacity:.75">请检查网络后重试</span>';
+  } finally {
+    btn.disabled = false;
   }
 }
 
-// ====== Network connectivity check ======
-(function checkConnection() {
-  const dot = document.getElementById('conn-dot');
-  const text = document.getElementById('conn-text');
-
-  // Simple fetch to API to check if reachable
-  fetch(getApiUrl(), { method: 'GET', mode: 'no-cors' })
-    .then(() => {
-      dot.className = 'status-dot online';
+// ===================== 健康检查 =====================
+async function checkHealth() {
+  const dot = document.getElementById('dot');
+  const text = document.getElementById('connText');
+  try {
+    const resp = await fetch(`${NTFY_BASE}/${getTopic()}/json?poll=1`, { mode: 'cors' });
+    if (resp.ok) {
+      dot.className = 'dot on';
       text.textContent = '通知服务在线';
-    })
-    .catch(() => {
-      // Fallback: still show online because no-cors may fail but CORS may work
-      dot.className = 'status-dot online';
-      text.textContent = '连接正常';
-    });
-})();
+    } else {
+      dot.className = 'dot off';
+      text.textContent = '通知服务异常 (' + resp.status + ')';
+    }
+  } catch (e) {
+    dot.className = 'dot off';
+    text.textContent = '无法连接通知服务';
+  }
+}
+
+// ===================== 事件绑定 =====================
+document.getElementById('sendBtn').addEventListener('click', sendNotify);
+
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const p = document.getElementById('phoneIn').value.trim();
+  const t = document.getElementById('topicIn').value.trim();
+  localStorage.setItem(K_PHONE, p || DEFAULT_PHONE);
+  if (t) localStorage.setItem(K_TOPIC, t); else localStorage.removeItem(K_TOPIC);
+  applySettings();
+  const r = document.getElementById('result');
+  r.className = 'result r-ok';
+  r.style.display = 'block';
+  r.innerHTML = '✅ 设置已保存';
+  setTimeout(() => { r.style.display = 'none'; }, 1800);
+});
+
+document.getElementById('testBtn').addEventListener('click', async () => {
+  const r = document.getElementById('result');
+  r.style.display = 'none';
+  try {
+    await publish('这是一条测试消息，请忽略');
+    r.className = 'result r-ok';
+    r.style.display = 'block';
+    r.innerHTML = '✅ 测试消息已入队<br><span style="font-size:12px;opacity:.75">请到企微确认是否收到</span>';
+  } catch (e) {
+    r.className = 'result r-err';
+    r.style.display = 'block';
+    r.innerHTML = '❌ 测试失败: ' + (e.message || e);
+  }
+});
+
+checkHealth();
+setInterval(checkHealth, 60000);
 </script>
 </body>
 </html>
