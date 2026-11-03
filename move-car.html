@@ -3,253 +3,225 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>挪车服务</title>
+<meta name="theme-color" content="#e53935">
+<title>挪车通知</title>
 <style>
   :root {
     --primary: #e53935;
-    --primary-dark: #c62828;
-    --bg: #fafafa;
+    --bg: #f7f7f8;
     --card: #ffffff;
-    --text: #212121;
-    --text-2: #757575;
-    --border: #e0e0e0;
-    --shadow: 0 2px 10px rgba(0,0,0,.08);
-    --radius: 14px;
+    --text: #1a1a1a;
+    --text-2: #6b6b6b;
+    --border: #e6e6e6;
+    --ok: #2e7d32;
+    --ok-bg: #e8f5e9;
+    --err: #c62828;
+    --err-bg: #ffebee;
+    --radius: 16px;
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     background: var(--bg); color: var(--text);
-    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    min-height:100vh; display:flex; justify-content:center;
   }
-  .wrap { max-width:420px; width:100%; padding:24px 16px 32px; min-height:100vh; display:flex; flex-direction:column; }
-  .hero { text-align:center; padding:28px 12px 20px; }
-  .hero-icon { font-size:60px; line-height:1; margin-bottom:14px; }
-  .hero h1 { font-size:30px; font-weight:800; color:var(--primary); letter-spacing:1px; margin-bottom:10px; }
-  .hero p { color:var(--text-2); font-size:15px; line-height:1.7; }
-  .card { background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; margin-bottom:14px; }
+  .wrap {
+    width:100%; max-width:480px; padding:20px 16px 32px;
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+
+  .hero { text-align:center; padding:24px 12px 20px; }
+  .hero-icon { font-size:56px; line-height:1; margin-bottom:12px; }
+  .hero h1 { font-size:26px; font-weight:800; letter-spacing:.5px; margin-bottom:8px; }
+  .hero p { color:var(--text-2); font-size:15px; line-height:1.65; }
+
+  .card {
+    background:var(--card); border-radius:var(--radius);
+    box-shadow:0 2px 14px rgba(0,0,0,.07);
+    padding:22px 20px; margin-bottom:14px;
+  }
+
   .plate {
-    display:flex; align-items:center; justify-content:center; gap:14px;
-    padding:20px; background:#f5f5f5; border-radius:10px; margin-bottom:18px;
+    display:flex; align-items:center; justify-content:center; gap:12px;
+    padding:18px; background:#fafafa; border:1px solid var(--border);
+    border-radius:12px; margin-bottom:18px;
   }
-  .plate-icon { font-size:30px; }
-  .plate-text { font-size:22px; font-weight:700; letter-spacing:3px; }
+  .plate-icon { font-size:28px; }
+  .plate-text { font-size:26px; font-weight:800; letter-spacing:2px; }
+
   .btn {
-    display:flex; align-items:center; justify-content:center; gap:9px;
-    width:100%; padding:17px 24px; font-size:18px; font-weight:700;
-    border:none; border-radius:50px; cursor:pointer; transition:transform .12s, background .2s;
-    font-family:inherit;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    width:100%; padding:18px 24px; font-size:19px; font-weight:700;
+    border:none; border-radius:52px; cursor:pointer; transition:transform .12s, opacity .2s;
+    font-family:inherit; color:#fff; background:var(--primary);
+    box-shadow:0 6px 18px rgba(229,57,53,.32);
   }
-  .btn:active { transform:scale(.975); }
-  .btn-main { background:var(--primary); color:#fff; box-shadow:0 5px 16px rgba(229,57,53,.32); }
-  .btn-main:hover { background:var(--primary-dark); }
-  .btn-main[disabled] { background:#bdbdbd; box-shadow:none; cursor:not-allowed; }
-  .btn-ghost { background:transparent; color:var(--text-2); border:1px solid var(--border); font-size:14px; padding:11px 20px; }
-  .status { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; color:var(--text-2); font-size:13px; }
-  .dot { width:9px; height:9px; border-radius:50%; background:#9e9e9e; }
+  .btn:active { transform:scale(.98); }
+  .btn[disabled] { opacity:.55; box-shadow:none; cursor:default; }
+
+  .feedback { margin-top:16px; padding:16px; border-radius:12px; text-align:center; display:none; }
+  .fb-ok { background:var(--ok-bg); color:var(--ok); }
+  .fb-err { background:var(--err-bg); color:var(--err); }
+  .fb-icon { font-size:30px; margin-bottom:8px; line-height:1; }
+  .fb-title { font-size:17px; font-weight:700; margin-bottom:5px; }
+  .fb-text { font-size:14px; line-height:1.6; opacity:.9; }
+
+  /* 通知没送达时的兜底：直接打电话 */
+  .fallback { text-align:center; }
+  .fb-label { font-size:13px; color:var(--text-2); margin-bottom:8px; }
+  .tel {
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:24px; font-weight:800; letter-spacing:1px;
+    color:var(--primary); text-decoration:none;
+    padding:12px 24px; border-radius:12px; background:#fdeeee;
+  }
+  .tel:active { background:#f8dcdc; }
+  .fb-hint { font-size:13px; color:var(--text-2); margin-top:10px; line-height:1.6; }
+
+  .status {
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    padding:10px; color:var(--text-2); font-size:13px;
+  }
+  .dot { width:8px; height:8px; border-radius:50%; background:#bdbdbd; }
   .dot.on { background:#43a047; } .dot.off { background:#e53935; } .dot.wait { background:#fb8c00; }
-  .result { margin-top:16px; padding:16px; border-radius:10px; text-align:center; font-size:14px; line-height:1.65; display:none; }
-  .r-ok { background:#e8f5e9; color:#2e7d32; }
-  .r-err { background:#ffebee; color:#c62828; }
-  .r-info { background:#e3f2fd; color:#1565c0; }
-  .spin { width:30px; height:30px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:sp .7s linear infinite; margin:0 auto 12px; }
+
+  .foot { margin-top:auto; padding:24px 10px 4px; text-align:center; color:#9a9a9a; font-size:12px; line-height:1.8; }
+
+  .spin { width:26px; height:26px; border:3px solid rgba(255,255,255,.45); border-top-color:#fff; border-radius:50%; animation:sp .7s linear infinite; }
   @keyframes sp { to { transform:rotate(360deg); } }
-  .foot { margin-top:auto; text-align:center; padding:20px 10px 4px; color:var(--text-2); font-size:12px; line-height:1.8; }
-  .foot code { background:#eee; padding:1px 5px; border-radius:4px; font-size:11px; }
-  details { margin-top:6px; }
-  summary { cursor:pointer; color:var(--text-2); font-size:13px; padding:10px; list-style:none; }
-  summary::-webkit-details-marker { display:none; }
-  .field { margin-bottom:12px; }
-  .field label { display:block; font-size:13px; color:var(--text-2); margin-bottom:5px; }
-  .field input {
-    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px;
-    font-size:15px; font-family:inherit; background:#fff; color:var(--text);
-  }
-  .field input:focus { outline:none; border-color:var(--primary); }
-  .row { display:flex; gap:9px; } .row .btn { flex:1; }
 </style>
 </head>
 <body>
 <div class="wrap">
+
   <div class="hero">
     <div class="hero-icon">🚗</div>
-    <h1>一键挪车</h1>
-    <p>您的车辆挡住了我的通行<br>点一下按钮，车主会立刻收到通知</p>
+    <h1>麻烦挪一下车</h1>
+    <p>这辆车挡住了通道<br>点一下就能通知车主</p>
   </div>
 
   <div class="card">
     <div class="plate">
-      <span class="plate-icon">📞</span>
-      <span class="plate-text" id="phone">177****6606</span>
+      <span class="plate-icon">🚙</span>
+      <span class="plate-text" id="plate">车辆在此</span>
     </div>
-    <button class="btn btn-main" id="sendBtn">📬 通知车主挪车</button>
-    <div id="loading" style="display:none;">
-      <div style="margin-top:18px;"><div class="spin"></div></div>
-      <p style="color:var(--text-2);font-size:14px;">正在发送通知…</p>
-    </div>
-    <div id="result" class="result"></div>
+
+    <button class="btn" id="sendBtn">
+      <span id="btnIcon">📬</span>
+      <span id="btnText">通知车主挪车</span>
+    </button>
+
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <!-- 通知没送达时的兜底：直接打电话 -->
+  <div class="card fallback">
+    <div class="fb-label">车主暂时挪不开？直接打电话：</div>
+    <a class="tel" href="tel:17700006606" id="telLink">
+      <span>📞</span><span id="telText">177 0000 6606</span>
+    </a>
+    <div class="fb-hint">电话来自车主在车辆上留的信息</div>
   </div>
 
   <div class="status">
     <span class="dot wait" id="dot"></span>
-    <span id="connText">正在检测通知服务…</span>
-  </div>
-
-  <div class="card" style="padding:6px 12px;">
-    <details id="admin">
-      <summary>⚙️ 车主设置</summary>
-      <div style="padding:6px 4px 12px;">
-        <div class="field">
-          <label for="phoneIn">显示的车牌尾号 / 电话尾号</label>
-          <input id="phoneIn" type="text" value="177****6606">
-        </div>
-        <div class="field">
-          <label for="topicIn">通知频道 (ntfy topic)</label>
-          <input id="topicIn" type="text">
-        </div>
-        <div class="row">
-          <button class="btn btn-ghost" id="saveBtn">💾 保存</button>
-          <button class="btn btn-ghost" id="testBtn">🧪 测试</button>
-        </div>
-      </div>
-    </details>
+    <span id="connText">正在连接通知服务…</span>
   </div>
 
   <div class="foot">
-    挪车通知系统 · GitHub Pages + ntfy + Apprise<br>
-    <span style="opacity:.65">任何人都可以扫码发送，请勿恶意骚扰</span>
+    请勿恶意骚扰，本页面仅用于挪车沟通
   </div>
 </div>
 
 <script>
-// ===================== 配置 =====================
-// ntfy topic 为公开队列，浏览器匿名写入；4gwifi 上的轮询器读取并转发到 5281
-const TOPIC = 'movecar-zh-gj';
+// ====== 车主维护的配置（路人不需要关心）======
+const TOPIC = 'movecar-zh-gj';        // ntfy 队列，须与 4gwifi 轮询器一致
 const NTFY_BASE = 'https://ntfy.sh';
 const MSG_PREFIX = 'MOVECAR|';
-const DEFAULT_PHONE = '177****6606';
+const PLATE_TEXT = '车辆在此';          // 可改成车牌，如 浙A·88888
+const PHONE_DISPLAY = '177 0000 6606'; // 车主电话（显示用）
+const PHONE_DIAL = '17700006606';      // 车主电话（拨号用）
 
-const K_TOPIC = 'movecar_topic';
-const K_PHONE = 'movecar_phone';
+const btn = document.getElementById('sendBtn');
+const btnIcon = document.getElementById('btnIcon');
+const btnText = document.getElementById('btnText');
+const feedback = document.getElementById('feedback');
+const dot = document.getElementById('dot');
+const connText = document.getElementById('connText');
 
-// ===================== 本地设置 =====================
-function getTopic() { return localStorage.getItem(K_TOPIC) || TOPIC; }
-function getPhone() { return localStorage.getItem(K_PHONE) || DEFAULT_PHONE; }
+document.getElementById('plate').textContent = PLATE_TEXT;
+document.getElementById('telLink').href = 'tel:' + PHONE_DIAL;
+document.getElementById('telText').textContent = PHONE_DISPLAY;
 
-function applySettings() {
-  document.getElementById('phone').textContent = getPhone();
-  document.getElementById('phoneIn').value = getPhone();
-  document.getElementById('topicIn').value = getTopic();
-}
-applySettings();
+let sending = false;
 
-// ===================== 核心：写入 ntfy 队列 =====================
-// 用 text/plain 触发 simple request，避免预检；同时 ntfy 支持完整 CORS。
-async function publish(bodyText) {
-  const url = `${NTFY_BASE}/${getTopic()}`;
-  const payload = MSG_PREFIX + bodyText;
-
-  const resp = await fetch(url, {
-    method: 'POST',
-    mode: 'cors',
-    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-    body: payload
-  });
-
-  if (!resp.ok) throw new Error('HTTP ' + resp.status);
-  const data = await resp.json().catch(() => ({}));
-  return data.id || 'ok';
+function showFeedback(kind, icon, title, text) {
+  feedback.className = 'feedback ' + (kind === 'ok' ? 'fb-ok' : 'fb-err');
+  feedback.innerHTML =
+    '<div class="fb-icon">' + icon + '</div>' +
+    '<div class="fb-title">' + title + '</div>' +
+    '<div class="fb-text">' + text + '</div>';
+  feedback.style.display = 'block';
 }
 
-// ===================== 发送 =====================
 async function sendNotify() {
-  const btn = document.getElementById('sendBtn');
-  const loading = document.getElementById('loading');
-  const result = document.getElementById('result');
-
+  if (sending) return;
+  sending = true;
   btn.disabled = true;
-  loading.style.display = 'block';
-  result.style.display = 'none';
-
-  const body = `您的爱车(${getPhone()})正在挡住我通行，请帮忙挪车`;
+  btnIcon.innerHTML = '<span class="spin"></span>';
+  btnText.textContent = '发送中…';
+  feedback.style.display = 'none';
 
   try {
-    const id = await publish(body);
-    loading.style.display = 'none';
-    result.className = 'result r-ok';
-    result.style.display = 'block';
-    result.innerHTML =
-      '<div style="font-size:26px;margin-bottom:8px;">✅</div>' +
-      '<strong>通知已发送！</strong><br>' +
-      '车主已收到挪车通知，正在赶来<br>' +
-      '<span style="font-size:11px;opacity:.6">ID: ' + id + '</span>';
-    checkHealth();
+    const resp = await fetch(NTFY_BASE + '/' + TOPIC, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: MSG_PREFIX + '有人在您车前需要挪车，请尽快处理'
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    await resp.json().catch(() => ({}));
+
+    btnIcon.textContent = '✅';
+    btnText.textContent = '已通知车主';
+    showFeedback('ok', '✅', '通知已发送给车主',
+      '车主会尽快赶来挪车。<br>若长时间没有动静，请直接拨打上面的电话。');
   } catch (err) {
-    loading.style.display = 'none';
-    result.className = 'result r-err';
-    result.style.display = 'block';
-    result.innerHTML =
-      '<div style="font-size:26px;margin-bottom:8px;">⚠️</div>' +
-      '<strong>发送失败</strong><br>' +
-      String(err && err.message ? err.message : err) + '<br>' +
-      '<span style="font-size:12px;opacity:.75">请检查网络后重试</span>';
+    btnIcon.textContent = '📬';
+    btnText.textContent = '通知车主挪车';
+    showFeedback('err', '⚠️', '网络不太顺畅，没能发出去',
+      '请直接拨打上面的电话联系车主，<br>给您添麻烦了。');
   } finally {
+    sending = false;
     btn.disabled = false;
+    checkHealth();
   }
 }
 
-// ===================== 健康检查 =====================
+// 轻量连通性检查：只探测一次，不打扰路人
 async function checkHealth() {
-  const dot = document.getElementById('dot');
-  const text = document.getElementById('connText');
   try {
-    const resp = await fetch(`${NTFY_BASE}/${getTopic()}/json?poll=1`, { mode: 'cors' });
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 6000);
+    const resp = await fetch(NTFY_BASE + '/' + TOPIC + '/json?poll=1', {
+      mode: 'cors', signal: ctrl.signal
+    });
+    clearTimeout(timer);
     if (resp.ok) {
       dot.className = 'dot on';
-      text.textContent = '通知服务在线';
+      connText.textContent = '通知服务正常';
     } else {
       dot.className = 'dot off';
-      text.textContent = '通知服务异常 (' + resp.status + ')';
+      connText.textContent = '通知服务异常，可直接打电话';
     }
   } catch (e) {
     dot.className = 'dot off';
-    text.textContent = '无法连接通知服务';
+    connText.textContent = '网络受限，可直接打电话';
   }
 }
 
-// ===================== 事件绑定 =====================
-document.getElementById('sendBtn').addEventListener('click', sendNotify);
-
-document.getElementById('saveBtn').addEventListener('click', () => {
-  const p = document.getElementById('phoneIn').value.trim();
-  const t = document.getElementById('topicIn').value.trim();
-  localStorage.setItem(K_PHONE, p || DEFAULT_PHONE);
-  if (t) localStorage.setItem(K_TOPIC, t); else localStorage.removeItem(K_TOPIC);
-  applySettings();
-  const r = document.getElementById('result');
-  r.className = 'result r-ok';
-  r.style.display = 'block';
-  r.innerHTML = '✅ 设置已保存';
-  setTimeout(() => { r.style.display = 'none'; }, 1800);
-});
-
-document.getElementById('testBtn').addEventListener('click', async () => {
-  const r = document.getElementById('result');
-  r.style.display = 'none';
-  try {
-    await publish('这是一条测试消息，请忽略');
-    r.className = 'result r-ok';
-    r.style.display = 'block';
-    r.innerHTML = '✅ 测试消息已入队<br><span style="font-size:12px;opacity:.75">请到企微确认是否收到</span>';
-  } catch (e) {
-    r.className = 'result r-err';
-    r.style.display = 'block';
-    r.innerHTML = '❌ 测试失败: ' + (e.message || e);
-  }
-});
-
+btn.addEventListener('click', sendNotify);
 checkHealth();
-setInterval(checkHealth, 60000);
 </script>
 </body>
 </html>
