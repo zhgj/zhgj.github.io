@@ -17,6 +17,8 @@
     --ok-bg: #e8f5e9;
     --err: #c62828;
     --err-bg: #ffebee;
+    --warn: #e65100;
+    --warn-bg: #fff3e0;
     --radius: 16px;
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -66,9 +68,24 @@
   .fb-title { font-size:17px; font-weight:700; margin-bottom:5px; }
   .fb-text { font-size:14px; line-height:1.6; opacity:.9; }
 
-  /* 通知没送达时的兜底：直接打电话 */
+  /* 留言 + 自己的电话 */
+  .field { margin-bottom:14px; text-align:left; }
+  .field-label { font-size:14px; color:var(--text-2); margin-bottom:8px; display:block; }
+  .field-label .req { color:var(--primary); }
+  .field-label .opt { color:#9a9a9a; font-size:12px; }
+  input[type="text"], input[type="tel"], textarea {
+    width:100%; padding:14px 16px; font-size:16px; font-family:inherit;
+    color:var(--text); background:#fafafa;
+    border:1px solid var(--border); border-radius:12px; outline:none;
+    transition:border-color .15s, background .15s;
+  }
+  input:focus, textarea:focus { border-color:var(--primary); background:#fff; }
+  textarea { resize:none; min-height:76px; }
+  .hint { font-size:12px; color:#9a9a9a; margin-top:6px; line-height:1.6; }
+
+  /* 服务异常时的兜底：直接打电话 */
   .fallback { text-align:center; }
-  .fb-label { font-size:13px; color:var(--text-2); margin-bottom:8px; }
+  .fb-label { font-size:14px; color:var(--text-2); margin-bottom:10px; line-height:1.6; }
   .tel {
     display:inline-flex; align-items:center; gap:8px;
     font-size:24px; font-weight:800; letter-spacing:1px;
@@ -77,6 +94,14 @@
   }
   .tel:active { background:#f8dcdc; }
   .fb-hint { font-size:13px; color:var(--text-2); margin-top:10px; line-height:1.6; }
+
+  .alert {
+    display:flex; gap:10px; align-items:flex-start;
+    padding:14px; border-radius:12px; margin-bottom:14px;
+    font-size:14px; line-height:1.65;
+  }
+  .alert-warn { background:var(--warn-bg); color:var(--warn); }
+  .alert-icon { font-size:18px; line-height:1.3; flex-shrink:0; }
 
   .status {
     display:flex; align-items:center; justify-content:center; gap:7px;
@@ -89,6 +114,8 @@
 
   .spin { width:26px; height:26px; border:3px solid rgba(255,255,255,.45); border-top-color:#fff; border-radius:50%; animation:sp .7s linear infinite; }
   @keyframes sp { to { transform:rotate(360deg); } }
+
+  .hide { display:none !important; }
 </style>
 </head>
 <body>
@@ -97,7 +124,7 @@
   <div class="hero">
     <div class="hero-icon">🚗</div>
     <h1>麻烦挪一下车</h1>
-    <p>这辆车挡住了通道<br>点一下就能通知车主</p>
+    <p id="heroSub">这辆车挡住了通道<br>点一下就能通知车主</p>
   </div>
 
   <div class="card">
@@ -106,26 +133,51 @@
       <span class="plate-text" id="plate">车辆在此</span>
     </div>
 
-    <button class="btn" id="sendBtn">
-      <span id="btnIcon">📬</span>
-      <span id="btnText">通知车主挪车</span>
-    </button>
+    <!-- 服务异常时的提示条 -->
+    <div class="alert alert-warn hide" id="alertBox">
+      <span class="alert-icon">⚠️</span>
+      <span id="alertText">通知服务暂时异常，请直接拨打车主电话。</span>
+    </div>
 
-    <div class="feedback" id="feedback"></div>
-  </div>
+    <!-- 正常状态：留电话 + 留言 -->
+    <div id="normalArea">
+      <div class="field">
+        <label class="field-label" for="phoneInput">
+          方便的话留个电话 <span class="opt">(选填，方便车主与您联系)</span>
+        </label>
+        <input type="tel" id="phoneInput" inputmode="numeric" maxlength="13"
+               placeholder="如 13812345678" autocomplete="tel">
+        <div class="hint">不填也可以，车主收到通知会尽快赶来。</div>
+      </div>
 
-  <!-- 通知没送达时的兜底：直接打电话 -->
-  <div class="card fallback">
-    <div class="fb-label">车主暂时挪不开？直接打电话：</div>
-    <a class="tel" href="tel:17700006606" id="telLink">
-      <span>📞</span><span id="telText">177 0000 6606</span>
-    </a>
-    <div class="fb-hint">电话来自车主在车辆上留的信息</div>
+      <div class="field">
+        <label class="field-label" for="noteInput">
+          想说的话 <span class="opt">(选填)</span>
+        </label>
+        <textarea id="noteInput" maxlength="60" placeholder="例如：车挡住了消防通道，车牌是豫P·H550T"></textarea>
+      </div>
+
+      <button class="btn" id="sendBtn">
+        <span id="btnIcon">📬</span>
+        <span id="btnText">通知车主挪车</span>
+      </button>
+
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <!-- 异常状态：只显示车主电话 -->
+    <div class="fallback hide" id="fallbackArea">
+      <div class="fb-label">车主电话：</div>
+      <a class="tel" href="tel:16602150394" id="telLink">
+        <span>📞</span><span id="telText">166 0215 0394</span>
+      </a>
+      <div class="fb-hint">通知服务暂时不可用，麻烦您直接电话联系车主</div>
+    </div>
   </div>
 
   <div class="status">
     <span class="dot wait" id="dot"></span>
-    <span id="connText">正在连接通知服务…</span>
+    <span id="connText">正在检测通知服务…</span>
   </div>
 
   <div class="foot">
@@ -135,25 +187,29 @@
 
 <script>
 // ====== 车主维护的配置（路人不需要关心）======
-const TOPIC = 'movecar-zh-gj';        // ntfy 队列，须与 4gwifi 轮询器一致
-const NTFY_BASE = 'https://ntfy.sh';
+const TOPIC      = 'movecar-zh-gj';          // ntfy 队列，须与 4gwifi 轮询器一致
+const HB_TOPIC   = 'movecar-zh-gj-hb';       // 心跳队列，轮询器定期发 HB| 时间戳
+const NTFY_BASE  = 'https://ntfy.sh';
 const MSG_PREFIX = 'MOVECAR|';
-const PLATE_TEXT = '车辆在此';          // 可改成车牌，如 浙A·88888
-const PHONE_DISPLAY = '177 0000 6606'; // 车主电话（显示用）
-const PHONE_DIAL = '17700006606';      // 车主电话（拨号用）
+const PLATE_TEXT = '豫P·H550T';             // 车牌
+const PHONE_DISPLAY = '166 0215 0394';      // 车主电话（仅服务异常时显示）
+const PHONE_DIAL    = '16602150394';        // 车主电话（拨号用）
+const HB_MAX_AGE   = 5 * 60;                // 心跳超过 5 分钟未更新 ⇒ 判定服务异常
+const PHONE_RE     = /^1[3-9]\d{9}$/;       // 大陆手机号
 
-const btn = document.getElementById('sendBtn');
-const btnIcon = document.getElementById('btnIcon');
-const btnText = document.getElementById('btnText');
-const feedback = document.getElementById('feedback');
-const dot = document.getElementById('dot');
-const connText = document.getElementById('connText');
+const el = id => document.getElementById(id);
+const btn = el('sendBtn'), btnIcon = el('btnIcon'), btnText = el('btnText');
+const feedback = el('feedback'), dot = el('dot'), connText = el('connText');
+const normalArea = el('normalArea'), fallbackArea = el('fallbackArea');
+const alertBox = el('alertBox'), alertText = el('alertText');
+const phoneInput = el('phoneInput'), noteInput = el('noteInput');
 
-document.getElementById('plate').textContent = PLATE_TEXT;
-document.getElementById('telLink').href = 'tel:' + PHONE_DIAL;
-document.getElementById('telText').textContent = PHONE_DISPLAY;
+el('plate').textContent = PLATE_TEXT;
+el('telLink').href = 'tel:' + PHONE_DIAL;
+el('telText').textContent = PHONE_DISPLAY;
 
 let sending = false;
+let serviceOk = false;   // 整条链路是否正常
 
 function showFeedback(kind, icon, title, text) {
   feedback.className = 'feedback ' + (kind === 'ok' ? 'fb-ok' : 'fb-err');
@@ -164,6 +220,67 @@ function showFeedback(kind, icon, title, text) {
   feedback.style.display = 'block';
 }
 
+// ---- 服务状态切换 ----
+function setServiceState(ok, reason) {
+  serviceOk = ok;
+  if (ok) {
+    normalArea.classList.remove('hide');
+    fallbackArea.classList.add('hide');
+    alertBox.classList.add('hide');
+    dot.className = 'dot on';
+    connText.textContent = '通知服务正常';
+  } else {
+    normalArea.classList.add('hide');
+    fallbackArea.classList.remove('hide');
+    alertBox.classList.remove('hide');
+    alertText.textContent = reason || '通知服务暂时异常，请直接拨打车主电话。';
+    dot.className = 'dot off';
+    connText.textContent = '通知服务异常，可直接打电话';
+  }
+}
+
+// ---- 健康检查：读心跳队列 ----
+// 只有「ntfy 可达」且「4gwifi 轮询器还活着」时才算正常。
+// 单看 ntfy 可达性是不够的：轮询器挂掉时 ntfy 照样通，但车主永远收不到。
+async function checkHealth() {
+  dot.className = 'dot wait';
+  connText.textContent = '正在检测通知服务…';
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8000);
+    const resp = await fetch(NTFY_BASE + '/' + HB_TOPIC + '/json?poll=1&since=10m', {
+      mode: 'cors', signal: ctrl.signal
+    });
+    clearTimeout(timer);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+    const raw = await resp.text();
+    let latest = 0;
+    raw.split('\n').forEach(line => {
+      if (!line.trim()) return;
+      let m;
+      try { m = JSON.parse(line); } catch (e) { return; }
+      if (m && m.event === 'message' && typeof m.message === 'string'
+          && m.message.indexOf('HB|') === 0) {
+        const ts = parseInt(m.message.slice(3), 10);
+        if (ts && ts > latest) latest = ts;
+      }
+    });
+
+    const age = latest ? (Date.now() / 1000 - latest) : Infinity;
+    if (latest && age <= HB_MAX_AGE) {
+      setServiceState(true);
+    } else {
+      setServiceState(false, latest
+        ? '通知服务暂时没有响应，请直接拨打车主电话。'
+        : '通知服务暂时异常，请直接拨打车主电话。');
+    }
+  } catch (e) {
+    setServiceState(false, '网络不太顺畅或通知服务异常，请直接拨打车主电话。');
+  }
+}
+
+// ---- 发送通知 ----
 async function sendNotify() {
   if (sending) return;
   sending = true;
@@ -172,12 +289,27 @@ async function sendNotify() {
   btnText.textContent = '发送中…';
   feedback.style.display = 'none';
 
+  const phone = phoneInput.value.replace(/[\s-]/g, '');
+  if (phone && !PHONE_RE.test(phone)) {
+    sending = false;
+    btn.disabled = false;
+    btnIcon.textContent = '📬';
+    btnText.textContent = '通知车主挪车';
+    showFeedback('err', '⚠️', '手机号格式不对',
+      '请填写 11 位手机号，或留空不填。');
+    return;
+  }
+
+  const note = noteInput.value.trim();
+  // 载荷: 车牌|路人电话|留言  ——  轮询器负责转成给车主看的通知
+  const payload = [PLATE_TEXT, phone, note].join('|');
+
   try {
     const resp = await fetch(NTFY_BASE + '/' + TOPIC, {
       method: 'POST',
       mode: 'cors',
       headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-      body: MSG_PREFIX + '有人在您车前需要挪车，请尽快处理'
+      body: MSG_PREFIX + payload
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     await resp.json().catch(() => ({}));
@@ -185,38 +317,18 @@ async function sendNotify() {
     btnIcon.textContent = '✅';
     btnText.textContent = '已通知车主';
     showFeedback('ok', '✅', '通知已发送给车主',
-      '车主会尽快赶来挪车。<br>若长时间没有动静，请直接拨打上面的电话。');
+      phone ? '车主会尽快赶来，并可能给您回电。'
+            : '车主会尽快赶来挪车。');
   } catch (err) {
+    // 发不出去 ⇒ 服务确实异常 ⇒ 立刻切到"显示车主电话"模式
+    setServiceState(false, '通知没能发出去，请直接拨打车主电话。');
     btnIcon.textContent = '📬';
     btnText.textContent = '通知车主挪车';
-    showFeedback('err', '⚠️', '网络不太顺畅，没能发出去',
-      '请直接拨打上面的电话联系车主，<br>给您添麻烦了。');
+    showFeedback('err', '⚠️', '没能发出去',
+      '请直接拨打车主电话联系车主，<br>给您添麻烦了。');
   } finally {
     sending = false;
     btn.disabled = false;
-    checkHealth();
-  }
-}
-
-// 轻量连通性检查：只探测一次，不打扰路人
-async function checkHealth() {
-  try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 6000);
-    const resp = await fetch(NTFY_BASE + '/' + TOPIC + '/json?poll=1', {
-      mode: 'cors', signal: ctrl.signal
-    });
-    clearTimeout(timer);
-    if (resp.ok) {
-      dot.className = 'dot on';
-      connText.textContent = '通知服务正常';
-    } else {
-      dot.className = 'dot off';
-      connText.textContent = '通知服务异常，可直接打电话';
-    }
-  } catch (e) {
-    dot.className = 'dot off';
-    connText.textContent = '网络受限，可直接打电话';
   }
 }
 
