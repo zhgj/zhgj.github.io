@@ -1,79 +1,76 @@
-# 挪车通知二维码系统
+# 使用`Github`进行`NIP-05`认证
 
-## 部署说明
+## For Your Links
 
-### 1. 4gwifi 服务端 (5281 端口)
+### 1. 创建Github个人主页库
 
-需要在 4gwifi 的 Apprise 服务上增加 CORS 支持，GitHub Pages 端才能调用它。
+文件结构如这个 `repository`
 
-#### 方法 A：通过 nginx 加 CORS（推荐）
+帮助链接：https://docs.github.com/en/pages
 
-在 4gwifi 的 nginx 配置中添加 CORS 头：
+### 2. `nostr.json`填写公钥的16进制
 
-```nginx
-# /etc/nginx/conf.d/apprise.conf 或类似位置
-server {
-    listen 5281;
-    
-    # CORS headers
-    add_header 'Access-Control-Allow-Origin' '*' always;
-    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
-    add_header 'Access-Control-Allow-Headers' 'Content-Type' always;
-    
-    # Handle preflight
-    if ($request_method = 'OPTIONS') {
-        add_header 'Access-Control-Allow-Origin' '*';
-        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
-        add_header 'Access-Control-Allow-Headers' 'Content-Type';
-        add_header 'Access-Control-Max-Age' 86400;
-        add_header 'Content-Length' 0;
-        return 204;
-    }
-    
-    # Proxy to apprise service
-    location / {
-        proxy_pass http://127.0.0.1:8080;  # 根据实际 apprise 端口调整
-    }
-}
-```
+转换公钥为16进制工具：https://damus.io/key/
 
-然后 `nginx -t && nginx -s reload`
+### 3. 保证本链接能访问
 
-#### 方法 B：直接修改 Python 源码
+https://zhgj.github.io/.well-known/nostr.json
 
-编辑 4gwifi 上的 `/root/apprise_ntfy.py`（或实际运行的 Python 脚本），在导入 `http.server` 后添加 CORS 支持：
+### 4. 在`NIP05`提交
 
-```python
-# 在 BaseHTTPRequestHandler 类中添加
-def end_headers(self):
-    self.send_header('Access-Control-Allow-Origin', '*')
-    self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-    super().end_headers()
+NIP05里填写：`ipanda@zhgj.github.io`
 
-def do_OPTIONS(self):
-    self.send_response(204)
-    self.end_headers()
-```
+https://metadata.nostr.com/
 
-### 2. GitHub Pages 前端
+### 5. 有任何问题请关注我或加群提问
 
-已经部署在：https://zhgj.github.io/move-car.html
+My Pub Key:
+npub1m6nf2uzgcl7gsj26yfakkpxjacpkjw9hg3uryx246z49ndm7azpqm2ww5v
 
-包含：
-- 动态生成的 QR 码（指向页面自身）
-- 点击按钮触发挪车通知
-- 调用 4gwifi Apprise 服务推送通知
+Amethyst Channel：
+* New:  
+note1f95z092sm3k8qtzvshy3s5zuun82eqgujc6n4956vrtt2u58xv5s6cg4ql
+* Old:  
+note1kpjpkqxep5yx0g84jy5pz8ypakqmcsj52era75rrehqkq3zwn7hsqmx92t
 
-### 3. 测试验证
+### 以上操作均需要在自己的Github账号下进行！！！文中`zhgj`、`ipanda`<font color='red'>自觉替换</font>为自己的！！！
+---
+<details><summary>CLICK ME</summary>
 
-在部署后，从 GitHub Pages 打开页面测试：
-1. 打开 https://zhgj.github.io/move-car.html
-2. 点击"发送挪车通知"按钮
-3. 应该在手机/企微/钉钉上收到挪车通知
+### 以下信息和上面不相关，请忽略！！！
 
-## 文件列表
+#### Global relays
+* https://nostr.watch/relays/find/
 
-- `move-car.html` - 挪车通知页面
-- `README.md` - 本文件
-- `DEPLOY.md` - 详细部署文档
+#### Useful Links：
+* https://open.iciba.com/dsapi/
+* https://onlineconvertfree.com/zh/convert-format/mp3-to-mp4/
+* https://web3.storage/
+
+#### Image Hosting Service：
+* https://im.ge/
+* https://img.vinua.cn/
+* https://im.gurl.eu.org/
+* https://imgbb.com/
+* https://www.hualigs.cn/
+* https://jpg.dog/
+* https://www.hd-r.cn/
+
+#### ChatGPT
+* http://chatai.yxboot.com/
+
+#### Bot APi
+* https://api.qingyunke.com/api.php?key=free&appid=0&msg=joke
+
+#### Temp Mail
+* https://etempmail.com/
+
+#### Other Links
+* https://api.oick.cn/random/api.php?type=pc
+* https://api.oick.cn/random/api.php?type=pe
+* https://doc.unift.xyz/
+
+#### Backup
+* https://bafybeigrlkcfukopyfowubrbn7zahracf6kutbm26loaum6asfatetxcui.ipfs.w3s.link/avatar.jpg
+* https://bafybeif3u2v3cswrzjbhqijzpcz7lannjhz52ahhncvk3lafr44qxvkjdy.ipfs.w3s.link/banner.gif
+</details>
