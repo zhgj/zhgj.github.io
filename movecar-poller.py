@@ -34,6 +34,7 @@ import os
 import sys
 import time
 import json
+import socket
 import logging
 import urllib.request
 import urllib.parse
@@ -66,6 +67,45 @@ def setup_logging():
     logger.addHandler(sh)
 
 
+def http_get_lines(url, timeout=15, idle_timeout=1.5):
+    """流式读取 ndjson, 逐行 yield。
+
+    ntfy 的响应是 Transfer-Encoding: chunked + Connection: keep-alive,
+    连接不会自动关闭 ⇒ urlopen().read() 会一直等到超时。
+    ⇒ 逐行读, 并把 socket 超时调小作为「空闲」判据, 读到空闲就收工返回。
+    """
+    req = urllib.request.Request(url, headers={'User-Agent': 'movecar-poller/1.0'})
+    resp = urllib.request.urlopen(req, timeout=timeout)
+    sock = None
+    try:
+        sock = resp.fp.raw._sock
+    except Exception:
+        pass
+    try:
+        if sock is not None:
+            sock.settimeout(idle_timeout)
+        while True:
+            try:
+                line = resp.readline()
+            except socket.timeout:
+                break  # 空闲 → 本轮结束
+            except OSError as e:
+                # readline 过程中 socket 超时可能导致连接不可用, 视为空闲
+                if 'timed out' in str(e).lower():
+                    break
+                raise
+            if not line:
+                break
+            line = line.strip()
+            if line:
+                yield line
+    finally:
+        try:
+            resp.close()
+        except Exception:
+            pass
+
+
 def http_get(url, timeout=15):
     req = urllib.request.Request(url, headers={'User-Agent': 'movecar-poller/1.0'})
     with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -79,28 +119,61 @@ def http_post_form(url, data, timeout=20):
     return http_get(url + sep + qs, timeout=timeout)
 
 
-def poll_once(since_id):
-    """拉取 ntfy 新消息, 返回 (新消息列表, 最新 id)"""
-    url = f'{NTFY_BASE}/{NTFY_TOPIC}/json?poll=1'
-    if since_id:
-        url += '&since=' + urllib.parse.quote(since_id)
-    raw = http_get(url, timeout=20)
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        logger.warning('ntfy 返回非 JSON: %s', raw[:120])
-        return [], since_id
-    if isinstance(data, dict):
-        data = [data]
+def fetch_all(since_id):
+    """拉取当前所有消息 (不传 since)。
+
+    用于两种场景:
+      ① 启动初始化游标 —— 取最后一条 message 的 id 作为起点
+      ② 队列原本为空、期间来了新消息 —— 此时这些消息都是"新"的, 需要投递
+    返回 (消息列表, 最后一条 message 的 id)
+    """
+    url = f'{NTFY_BASE}/{NTFY_TOPIC}/json'
     msgs, last = [], since_id
-    for m in data:
-        if not isinstance(m, dict):
-            continue
-        if m.get('id'):
-            last = m['id']
-        if m.get('event') != 'message':
-            continue
-        msgs.append(m)
+    try:
+        for line in http_get_lines(url, timeout=15, idle_timeout=2.0):
+            try:
+                m = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(m, dict):
+                continue
+            if m.get('event') != 'message':
+                continue
+            mid = m.get('id')
+            if mid:
+                last = mid
+            msgs.append(m)
+    except socket.timeout:
+        pass
+    return msgs, last
+
+
+def poll_once(since_id):
+    """拉取 ntfy 新消息, 返回 (新消息列表, 最新 id)
+
+    ntfy 语义 (实测):
+      /<topic>/json?since=<消息id>   返回该 id 之后的所有消息 (另含一条 event=open 的空事件)
+      响应是 chunked + keep-alive 流, 连接不自动关闭 ⇒ 逐行读, 靠 socket 空闲超时收工。
+    """
+    url = f'{NTFY_BASE}/{NTFY_TOPIC}/json?since=' + urllib.parse.quote(str(since_id))
+
+    msgs, last = [], since_id
+    try:
+        for line in http_get_lines(url, timeout=15, idle_timeout=2.0):
+            try:
+                m = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(m, dict):
+                continue
+            if m.get('event') != 'message':
+                continue  # 跳过 open/keepalive 等事件
+            mid = m.get('id')
+            if mid:
+                last = mid       # ★ 游标只取 message 事件的 id
+            msgs.append(m)
+    except socket.timeout:
+        pass
     return msgs, last
 
 
@@ -123,26 +196,32 @@ def main():
     logger.info('=' * 50)
 
     since_id = ''
-    first = True
     fail = 0
+
+    # 初始化游标: 无 since 拉一次全量, 取最后一条消息 id。
+    # 这样启动前的老消息不会重复投递, 启动后的新消息不会丢。
+    # 若队列为空, 则用「首次成功拉到消息时的 id」作为起点 (见下方 fallback)。
+    try:
+        _old, since_id = fetch_all(since_id)
+        logger.info('游标初始化: %s', since_id or '(队列为空, 等待首条消息)')
+    except Exception as e:
+        logger.warning('初始化游标失败(将继续重试): %s', e)
 
     while True:
         try:
-            msgs, since_id = poll_once(since_id)
+            if not since_id:
+                # 队列原本为空, 期间来了新消息 => 这些都是新消息, 要投递
+                msgs, since_id = fetch_all(since_id)
+                if msgs:
+                    logger.info('队列收到首批消息 %d 条, 游标=%s', len(msgs), since_id)
+            else:
+                msgs, new_id = poll_once(since_id)
+                if new_id:
+                    since_id = new_id
             fail = 0
-            if first and msgs:
-                # 首次拉取: 只记住游标, 不处理历史消息
-                logger.info('首次同步, 历史消息 %d 条已跳过', len(msgs))
-                first = False
-            elif first:
-                first = False
 
             for m in msgs:
                 text = m.get('message', '') or ''
-                ts = int(m.get('time', 0) or 0)
-                # 启动前的旧消息不处理
-                if ts and ts < START_TS - 60:
-                    continue
                 if not text.startswith(PREFIX):
                     logger.info('忽略非挪车消息: %s', text[:80])
                     continue
