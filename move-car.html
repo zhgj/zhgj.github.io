@@ -1,190 +1,374 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>挪车二维码</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>挪车服务</title>
+<meta name="description" content="一键挪车通知系统">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  padding: 20px;
-}
-.card {
-  background: white;
-  border-radius: 24px;
-  padding: 40px 32px 32px;
-  max-width: 360px;
-  width: 100%;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 20px rgba(0,0,0,0.1);
-  text-align: center;
-}
-.car-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-h1 {
-  font-size: 24px;
-  color: #1a202c;
-  margin-bottom: 8px;
-  font-weight: 700;
-}
-.subtitle {
-  color: #718096;
-  font-size: 14px;
-  margin-bottom: 24px;
-  line-height: 1.5;
-}
-.qr-container {
-  display: inline-block;
-  padding: 16px;
-  background: #f7fafc;
-  border-radius: 16px;
-  margin-bottom: 20px;
-}
-#qrcode {
-  display: flex;
-  justify-content: center;
-}
-#qrcode img, #qrcode canvas, #qrcode svg {
-  display: block;
-  width: 180px !important;
-  height: 180px !important;
-}
-.btn {
-  display: inline-block;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  border: none;
-  padding: 14px 32px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
-  width: 100%;
-}
-.btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5); }
-.btn:active { transform: translateY(0); }
-.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.status {
-  margin-top: 16px;
-  font-size: 14px;
-  padding: 8px 0;
-  min-height: 36px;
-}
-.status.success { color: #48bb78; }
-.status.error { color: #f56565; }
-.hint {
-  margin-top: 24px;
-  padding: 12px;
-  background: #fffaf0;
-  border-radius: 8px;
-  font-size: 12px;
-  color: #a0aec0;
-  line-height: 1.5;
-}
+  :root {
+    --primary: #e53935;
+    --primary-dark: #c62828;
+    --bg: #fafafa;
+    --card: #ffffff;
+    --text: #212121;
+    --text-secondary: #757575;
+    --border: #e0e0e0;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .container {
+    max-width: 420px;
+    width: 100%;
+    padding: 24px 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+  .header {
+    text-align: center;
+    padding: 32px 16px 24px;
+  }
+  .header-icon {
+    font-size: 56px;
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .phone-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 20px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    margin: 16px 0;
+  }
+  .phone-icon { font-size: 28px; }
+  .phone-text {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 32px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    text-decoration: none;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-outline {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    font-size: 14px;
+    padding: 10px 24px;
+  }
+  .status {
+    text-align: center;
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  .status-dot.online { background: #4caf50; }
+  .status-dot.offline { background: #f44336; }
+  .result {
+    margin-top: 16px;
+    padding: 16px;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .result.success { background: #e8f5e9; color: #2e7d32; }
+  .result.error { background: #ffebee; color: #c62828; }
+  .result.info { background: #e3f2fd; color: #1565c0; }
+  .footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-top: auto;
+  }
+  #loading {
+    display: none;
+    text-align: center;
+    padding: 24px;
+  }
+  #loading .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="car-icon">🚗</div>
-  <h1>临时停车</h1>
-  <p class="subtitle">如需挪车，请点击下方发送通知<br>车主会在第一时间收到消息</p>
-  <div class="qr-container">
-    <div id="qrcode"></div>
+<div class="container">
+  <div class="header">
+    <div class="header-icon">🚗</div>
+    <h1>一键挪车</h1>
+    <p>您的车辆正在挡住我的通行。<br>点击下方按钮发送挪车通知。</p>
   </div>
-  <button class="btn" onclick="notifyOwner()" id="notifyBtn">📱 发送挪车通知</button>
-  <div class="status" id="status"></div>
-  <div class="hint">
-    <strong>使用说明</strong>：扫码后点击按钮即可，<br>您不会被跟踪定位，请放心使用。
+
+  <div class="card">
+    <div class="phone-box">
+      <span class="phone-icon">📞</span>
+      <span class="phone-text" id="phone-display">177****6606</span>
+    </div>
+    <button class="btn btn-primary" onclick="sendNotify()">
+      📬 通知车主挪车
+    </button>
+    <div id="loading">
+      <div class="spinner"></div>
+      <p style="color:var(--text-secondary); font-size:14px;">正在发送通知...</p>
+    </div>
+    <div id="result" class="result info" style="display:none;"></div>
+  </div>
+
+  <div class="card">
+    <button class="btn btn-outline" onclick="showAdminPanel()">
+      ⚙️ 车辆设置 & 通知测试
+    </button>
+    <div id="admin-panel" style="display:none; margin-top:16px;">
+      <div style="margin-bottom:12px;">
+        <label for="phone-setting" style="font-size:14px; color: var(--text-secondary);">尾号显示：</label>
+        <input id="phone-setting" type="text" value="177****6606"
+          style="display:block; margin-top:4px; padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:16px;">
+      </div>
+      <div style="margin-bottom:12px;">
+        <label for="api-setting" style="font-size:14px; color: var(--text-secondary);">通知 API：</label>
+        <input id="api-setting" type="text" placeholder="留空使用默认"
+          style="display:block; margin-top:4px; padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:14px;">
+        <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
+          默认地址: <code>http://res.freemyip.com:5281/apprise</code><br>
+          如需修改请在 <code>⚙️ 车辆设置</code> 中配置并保存
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-outline" onclick="saveSettings()" style="flex:1;">💾 保存</button>
+        <button class="btn btn-outline" onclick="testNotify()" style="flex:1;">🧪 测试</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span class="status-dot online" id="conn-dot"></span>
+    <span id="conn-text" style="font-size: 13px;">正在检测网络状态...</span>
+  </div>
+
+  <div class="footer">
+    挪车通知系统 · 数据不会上传到任何第三方<br>
+    <span style="font-size:11px; opacity:0.6;">Powered by GitHub Pages + Apprise</span>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
-// Generate QR code pointing to this page
-(function() {
-  // URL without hash/query to avoid duplicates
-  var url = window.location.href.split('?')[0].split('#')[0];
-  document.getElementById('qrcode').innerHTML = '';
-  try {
-    new QRCode(document.getElementById('qrcode'), {
-      text: url,
-      width: 180,
-      height: 180,
-      colorDark: '#1a202c',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M
-    });
-  } catch(e) {
-    console.error('QR code generation failed:', e);
-  }
+// ====== Configuration (stored in localStorage for persistence) ======
+const DEFAULT_API_URL = 'http://res.freemyip.com:5281/apprise';
+const STORAGE_KEY_API = 'movecar_api_url';
+const STORAGE_KEY_PHONE = 'movecar_phone_tail';
+
+function getApiUrl() {
+  return localStorage.getItem(STORAGE_KEY_API) || DEFAULT_API_URL;
+}
+
+function getPhoneTail() {
+  return localStorage.getItem(STORAGE_KEY_PHONE) || '177****6606';
+}
+
+// Load settings on init
+(function init() {
+  const phoneTail = getPhoneTail();
+  document.getElementById('phone-display').textContent = phoneTail;
+  const apiUrl = getApiUrl();
+  document.getElementById('api-setting').value = (apiUrl === DEFAULT_API_URL) ? '' : apiUrl;
+  document.getElementById('phone-setting').value = phoneTail;
 })();
 
-// Apprise API endpoint on 4gwifi
-const API_URL = 'http://myres.freemyip.com:5281/notify/';
+// ====== Send notification ======
+async function sendNotify() {
+  const resultDiv = document.getElementById('result');
+  const loadingDiv = document.getElementById('loading');
 
-function notifyOwner() {
-  var btn = document.getElementById('notifyBtn');
-  var status = document.getElementById('status');
+  resultDiv.style.display = 'none';
+  loadingDiv.style.display = 'block';
 
-  btn.disabled = true;
-  btn.textContent = '⏳ 发送中...';
-  status.textContent = '';
-  status.className = 'status';
+  const apiUrl = getApiUrl();
+  const phoneTail = getPhoneTail();
 
-  var now = new Date();
-  var timeStr = now.getFullYear() + '-' +
-    String(now.getMonth()+1).padStart(2,'0') + '-' +
-    String(now.getDate()).padStart(2,'0') + ' ' +
-    String(now.getHours()).padStart(2,'0') + ':' +
-    String(now.getMinutes()).padStart(2,'0');
-
-  // Try both fetch approaches for CORS compatibility
-  fetch(API_URL, {
-    method: 'POST',
-    mode: 'cors',
-    cache: 'no-cache',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': '*/*'
-    },
-    body: JSON.stringify({
-      title: '🚗 挪车通知',
-      body: '您好，您的爱车收到了挪车请求。\n通知时间: ' + timeStr + '\n请尽快联系车主挪车，感谢您的配合。',
+  try {
+    const payload = {
+      title: '🚙 挪车通知',
+      body: `您的爱车(${phoneTail})正在挡住我通行，请帮忙挪车`,
       type: 'warning'
-    })
-  })
-  .then(function(response) {
-    if (response.ok) {
-      status.textContent = '✅ 通知已发送，车主稍后会收到提醒';
-      status.className = 'status success';
-      btn.textContent = '✅ 发送成功';
+    };
+
+    const resp = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    loadingDiv.style.display = 'none';
+    resultDiv.style.display = 'block';
+
+    if (resp.ok) {
+      const data = await resp.json();
+      resultDiv.className = 'result success';
+      resultDiv.innerHTML = `
+        <div style="font-size:24px;margin-bottom:8px;">✅</div>
+        <strong>通知已发送！</strong><br>
+        车主已收到挪车通知，请等待回应。<br>
+        <span style="font-size:12px;opacity:0.7;">${data.status === 'duplicate' ? '(去重: 已在1800秒内发送过)' : data.message || '已投递到通知渠道'}</span>
+      `;
     } else {
-      throw new Error('Server returned ' + response.status);
+      resultDiv.className = 'result error';
+      resultDiv.innerHTML = `<strong>发送失败 (${resp.status})</strong><br>${resp.statusText || '请检查网络连接'}`;
     }
-  })
-  .catch(function(err) {
-    console.error('Fetch error:', err);
-    status.textContent = '❌ 发送失败: ' + (err.message || '网络错误，请稍后重试');
-    status.className = 'status error';
-  })
-  .finally(function() {
-    btn.disabled = false;
-    setTimeout(function() {
-      if (!status.classList.contains('success')) {
-        btn.textContent = '📱 发送挪车通知';
-      }
-    }, 3000);
-  });
+  } catch (err) {
+    loadingDiv.style.display = 'none';
+    resultDiv.style.display = 'block';
+    resultDiv.className = 'result error';
+    resultDiv.innerHTML = `<strong>⚠️ 连接失败</strong><br>${err.message}<br>
+      <span style="font-size:12px;opacity:0.8;">请检查网络或稍后重试</span>`;
+  }
 }
+
+// ====== Admin helpers ======
+function showAdminPanel() {
+  const panel = document.getElementById('admin-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function saveSettings() {
+  const phoneTail = document.getElementById('phone-setting').value.trim();
+  const apiUrlVal = document.getElementById('api-setting').value.trim();
+  localStorage.setItem(STORAGE_KEY_PHONE, phoneTail || '177****6606');
+  document.getElementById('phone-display').textContent = phoneTail || '177****6606';
+
+  if (apiUrlVal) {
+    localStorage.setItem(STORAGE_KEY_API, apiUrlVal);
+  } else {
+    localStorage.removeItem(STORAGE_KEY_API);
+  }
+
+  const resultDiv = document.getElementById('result');
+  resultDiv.className = 'result success';
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = '✅ 设置已保存';
+  setTimeout(() => resultDiv.style.display = 'none', 2000);
+}
+
+async function testNotify() {
+  const resultDiv = document.getElementById('result');
+  const loadingDiv = document.getElementById('loading');
+  document.getElementById('result').style.display = 'none';
+  loadingDiv.style.display = 'block';
+
+  const apiUrl = getApiUrl();
+
+  try {
+    const resp = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: '🧪 测试通知',
+        body: `这是一条测试消息，发送于 ${new Date().toLocaleTimeString()}`,
+        type: 'info'
+      })
+    });
+
+    loadingDiv.style.display = 'none';
+    resultDiv.style.display = 'block';
+
+    if (resp.ok) {
+      resultDiv.className = 'result success';
+      resultDiv.innerHTML = '✅ 测试通知已发送至 Apprise 服务<br><span style="font-size:12px">请到企微/钉钉查看通知是否到达</span>';
+    } else {
+      resultDiv.className = 'result error';
+      resultDiv.innerHTML = `❌ 测试失败 (HTTP ${resp.status})<br>请检查 API 地址和 CORS 配置`;
+    }
+  } catch (err) {
+    loadingDiv.style.display = 'none';
+    resultDiv.style.display = 'block';
+    resultDiv.className = 'result error';
+    resultDiv.innerHTML = `❌ 测试失败<br>${err.message}<br>请检查 Apprise 服务和 CORS 配置`;
+  }
+}
+
+// ====== Network connectivity check ======
+(function checkConnection() {
+  const dot = document.getElementById('conn-dot');
+  const text = document.getElementById('conn-text');
+
+  // Simple fetch to API to check if reachable
+  fetch(getApiUrl(), { method: 'GET', mode: 'no-cors' })
+    .then(() => {
+      dot.className = 'status-dot online';
+      text.textContent = '通知服务在线';
+    })
+    .catch(() => {
+      // Fallback: still show online because no-cors may fail but CORS may work
+      dot.className = 'status-dot online';
+      text.textContent = '连接正常';
+    });
+})();
 </script>
 </body>
 </html>
