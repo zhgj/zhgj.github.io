@@ -83,7 +83,7 @@
   textarea { resize:none; min-height:76px; }
   .hint { font-size:12px; color:#9a9a9a; margin-top:6px; line-height:1.6; }
 
-  /* 服务异常时的兜底：直接打电话 */
+  /* 兜底：直接打电话 */
   .fallback { text-align:center; }
   .fb-label { font-size:14px; color:var(--text-2); margin-bottom:10px; line-height:1.6; }
   .tel {
@@ -102,13 +102,6 @@
   }
   .alert-warn { background:var(--warn-bg); color:var(--warn); }
   .alert-icon { font-size:18px; line-height:1.3; flex-shrink:0; }
-
-  .status {
-    display:flex; align-items:center; justify-content:center; gap:7px;
-    padding:10px; color:var(--text-2); font-size:13px;
-  }
-  .dot { width:8px; height:8px; border-radius:50%; background:#bdbdbd; }
-  .dot.on { background:#43a047; } .dot.off { background:#e53935; } .dot.wait { background:#fb8c00; }
 
   .foot { margin-top:auto; padding:24px 10px 4px; text-align:center; color:#9a9a9a; font-size:12px; line-height:1.8; }
 
@@ -133,13 +126,13 @@
       <span class="plate-text" id="plate">车辆在此</span>
     </div>
 
-    <!-- 服务异常时的提示条 -->
+    <!-- 兜底提示条 -->
     <div class="alert alert-warn hide" id="alertBox">
       <span class="alert-icon">⚠️</span>
       <span id="alertText">通知服务暂时异常，请直接拨打车主电话。</span>
     </div>
 
-    <!-- 正常状态：留电话 + 留言 -->
+    <!-- 主流程：留电话 + 留言 + 一键通知 -->
     <div id="normalArea">
       <div class="field">
         <label class="field-label" for="phoneInput">
@@ -165,19 +158,14 @@
       <div class="feedback" id="feedback"></div>
     </div>
 
-    <!-- 异常状态：只显示车主电话 -->
+    <!-- 兜底：只显示车主电话 -->
     <div class="fallback hide" id="fallbackArea">
       <div class="fb-label">车主电话：</div>
       <a class="tel" href="tel:16602150394" id="telLink">
         <span>📞</span><span id="telText">166 0215 0394</span>
       </a>
-      <div class="fb-hint">通知服务暂时不可用，麻烦您直接电话联系车主</div>
+      <div class="fb-hint">通知暂时没能确认送达，麻烦您直接电话联系车主</div>
     </div>
-  </div>
-
-  <div class="status">
-    <span class="dot wait" id="dot"></span>
-    <span id="connText">正在检测通知服务…</span>
   </div>
 
   <div class="foot">
@@ -187,19 +175,20 @@
 
 <script>
 // ====== 车主维护的配置（路人不需要关心）======
-const TOPIC      = 'movecar-zh-gj';          // ntfy 队列，须与 4gwifi 轮询器一致
-const HB_TOPIC   = 'movecar-zh-gj-hb';       // 心跳队列，轮询器定期发 HB| 时间戳
+const TOPIC      = 'movecar-zh-gj';          // 通知队列，须与 4gwifi 轮询器一致
+const ACK_TOPIC  = 'movecar-zh-gj-ack';      // 回执队列，轮询器投递完成后发 ACK
 const NTFY_BASE  = 'https://ntfy.sh';
 const MSG_PREFIX = 'MOVECAR|';
-const PLATE_TEXT = '豫P·H550T';             // 车牌
-const PHONE_DISPLAY = '166 0215 0394';      // 车主电话（仅服务异常时显示）
-const PHONE_DIAL    = '16602150394';        // 车主电话（拨号用）
-const HB_MAX_AGE   = 5 * 60;                // 心跳超过 5 分钟未更新 ⇒ 判定服务异常
-const PHONE_RE     = /^1[3-9]\d{9}$/;       // 大陆手机号
+const ACK_PREFIX = 'ACK|';
+const PLATE_TEXT = '豫P·H550T';
+const PHONE_DISPLAY = '166 0215 0394';      // 车主电话（仅兜底时显示）
+const PHONE_DIAL    = '16602150394';
+const ACK_TIMEOUT_MS = 25000;               // 轮询周期 10s，留一次重试余量
+const PHONE_RE     = /^1[3-9]\d{9}$/;
 
 const el = id => document.getElementById(id);
 const btn = el('sendBtn'), btnIcon = el('btnIcon'), btnText = el('btnText');
-const feedback = el('feedback'), dot = el('dot'), connText = el('connText');
+const feedback = el('feedback');
 const normalArea = el('normalArea'), fallbackArea = el('fallbackArea');
 const alertBox = el('alertBox'), alertText = el('alertText');
 const phoneInput = el('phoneInput'), noteInput = el('noteInput');
@@ -209,7 +198,6 @@ el('telLink').href = 'tel:' + PHONE_DIAL;
 el('telText').textContent = PHONE_DISPLAY;
 
 let sending = false;
-let serviceOk = false;   // 整条链路是否正常
 
 function showFeedback(kind, icon, title, text) {
   feedback.className = 'feedback ' + (kind === 'ok' ? 'fb-ok' : 'fb-err');
@@ -220,89 +208,116 @@ function showFeedback(kind, icon, title, text) {
   feedback.style.display = 'block';
 }
 
-// ---- 服务状态切换 ----
-function setServiceState(ok, reason) {
-  serviceOk = ok;
-  if (ok) {
-    normalArea.classList.remove('hide');
-    fallbackArea.classList.add('hide');
-    alertBox.classList.add('hide');
-    dot.className = 'dot on';
-    connText.textContent = '通知服务正常';
-  } else {
-    normalArea.classList.add('hide');
-    fallbackArea.classList.remove('hide');
-    alertBox.classList.remove('hide');
-    alertText.textContent = reason || '通知服务暂时异常，请直接拨打车主电话。';
-    dot.className = 'dot off';
-    connText.textContent = '通知服务异常，可直接打电话';
-  }
+function resetButton() {
+  sending = false;
+  btn.disabled = false;
 }
 
-// ---- 健康检查：读心跳队列 ----
-// 只有「ntfy 可达」且「4gwifi 轮询器还活着」时才算正常。
-// 单看 ntfy 可达性是不够的：轮询器挂掉时 ntfy 照样通，但车主永远收不到。
-async function checkHealth() {
-  dot.className = 'dot wait';
-  connText.textContent = '正在检测通知服务…';
-  try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 8000);
-    const resp = await fetch(NTFY_BASE + '/' + HB_TOPIC + '/json?poll=1&since=10m', {
-      mode: 'cors', signal: ctrl.signal
-    });
+function showFallback(reason) {
+  normalArea.classList.add('hide');
+  fallbackArea.classList.remove('hide');
+  alertBox.classList.remove('hide');
+  alertText.textContent = reason || '通知暂时没能确认送达，请直接拨打车主电话。';
+}
+
+function newReqId() {
+  return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+// 收到回执文本：只认自己那一条 reqId，别人的回执忽略
+function matchAck(text, reqId, onOk, onFail) {
+  if (!text || text.indexOf(ACK_PREFIX) !== 0) return false;
+  const p = text.split('|');
+  if (p[1] !== reqId) return false;
+  if (p[2] === 'OK') onOk(); else onFail();
+  return true;
+}
+
+// 等待回执：SSE 实时接收 + 低频 GET 兜底 + 25s 超时
+function waitForAck(reqId) {
+  let done = false, es = null, pollTimer = null, timer = null, tries = 0;
+
+  function finish(ok, reason) {
+    if (done) return;
+    done = true;
     clearTimeout(timer);
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-
-    const raw = await resp.text();
-    let latest = 0;
-    raw.split('\n').forEach(line => {
-      if (!line.trim()) return;
-      let m;
-      try { m = JSON.parse(line); } catch (e) { return; }
-      if (m && m.event === 'message' && typeof m.message === 'string'
-          && m.message.indexOf('HB|') === 0) {
-        const ts = parseInt(m.message.slice(3), 10);
-        if (ts && ts > latest) latest = ts;
-      }
-    });
-
-    const age = latest ? (Date.now() / 1000 - latest) : Infinity;
-    if (latest && age <= HB_MAX_AGE) {
-      setServiceState(true);
+    if (es) { try { es.close(); } catch (e) {} }
+    if (pollTimer) clearInterval(pollTimer);
+    resetButton();
+    if (ok) {
+      btnIcon.textContent = '✅';
+      btnText.textContent = '已通知车主';
+      showFeedback('ok', '✅', '车主已收到通知',
+        '车主会尽快赶来挪车，感谢您的提醒。');
     } else {
-      setServiceState(false, latest
-        ? '通知服务暂时没有响应，请直接拨打车主电话。'
-        : '通知服务暂时异常，请直接拨打车主电话。');
+      btnIcon.textContent = '📬';
+      btnText.textContent = '通知车主挪车';
+      showFallback(reason);
     }
-  } catch (e) {
-    setServiceState(false, '网络不太顺畅或通知服务异常，请直接拨打车主电话。');
   }
+
+  function onText(text) {
+    matchAck(text, reqId,
+      () => finish(true),
+      () => finish(false, '通知没能送达车主，请直接拨打电话。'));
+  }
+
+  timer = setTimeout(function () {
+    finish(false, '通知暂时没有回应，请直接拨打车主电话。');
+  }, ACK_TIMEOUT_MS);
+
+  // 主通道：SSE 长连接，1 个请求、实时。ntfy /sse 带 Access-Control-Allow-Origin: *
+  try {
+    es = new EventSource(NTFY_BASE + '/' + ACK_TOPIC + '/sse');
+    es.onmessage = function (e) {
+      let m;
+      try { m = JSON.parse(e.data); } catch (_) { return; }
+      if (m && typeof m.message === 'string') onText(m.message);
+    };
+    es.onerror = function () { /* 断开后由下面的兜底轮询接管 */ };
+  } catch (_) { es = null; }
+
+  // 兜底：SSE 不可用或回放不到时，每 5s 拉一次（最多 4 次），
+  // 频率 12 req/min 以内，不会打爆路人 IP 的 request 桶。
+  pollTimer = setInterval(function () {
+    if (done) return;
+    tries++;
+    if (tries > 4) { clearInterval(pollTimer); pollTimer = null; return; }
+    fetch(NTFY_BASE + '/' + ACK_TOPIC + '/json?poll=1&since=all', { mode: 'cors' })
+      .then(function (r) { return r.text(); })
+      .then(function (raw) {
+        raw.split('\n').forEach(function (line) {
+          if (!line.trim()) return;
+          let m;
+          try { m = JSON.parse(line); } catch (_) { return; }
+          if (m && m.event === 'message' && typeof m.message === 'string') onText(m.message);
+        });
+      })
+      .catch(function () {});
+  }, 5000);
 }
 
 // ---- 发送通知 ----
 async function sendNotify() {
   if (sending) return;
-  sending = true;
-  btn.disabled = true;
-  btnIcon.innerHTML = '<span class="spin"></span>';
-  btnText.textContent = '发送中…';
-  feedback.style.display = 'none';
 
   const phone = phoneInput.value.replace(/[\s-]/g, '');
   if (phone && !PHONE_RE.test(phone)) {
-    sending = false;
-    btn.disabled = false;
-    btnIcon.textContent = '📬';
-    btnText.textContent = '通知车主挪车';
     showFeedback('err', '⚠️', '手机号格式不对',
       '请填写 11 位手机号，或留空不填。');
     return;
   }
 
   const note = noteInput.value.trim();
-  // 载荷: 车牌|路人电话|留言  ——  轮询器负责转成给车主看的通知
-  const payload = [PLATE_TEXT, phone, note].join('|');
+  const reqId = newReqId();
+  // 载荷: reqId|车牌|路人电话|留言 —— 轮询器据此回 ACK|<reqId>|OK
+  const payload = [reqId, PLATE_TEXT, phone, note].join('|');
+
+  sending = true;
+  btn.disabled = true;
+  btnIcon.innerHTML = '<span class="spin"></span>';
+  btnText.textContent = '正在通知车主…';
+  feedback.style.display = 'none';
 
   try {
     const resp = await fetch(NTFY_BASE + '/' + TOPIC, {
@@ -314,26 +329,22 @@ async function sendNotify() {
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     await resp.json().catch(() => ({}));
 
-    btnIcon.textContent = '✅';
-    btnText.textContent = '已通知车主';
-    showFeedback('ok', '✅', '通知已发送给车主',
-      phone ? '车主会尽快赶来，并可能给您回电。'
-            : '车主会尽快赶来挪车。');
+    // POST 成功只证明消息进了 ntfy。轮询器是否真的消费并推到 apprise，
+    // 由 ACK 回执确认 —— 这一步能挡住「轮询器挂掉但页面显示已通知」的假成功。
+    waitForAck(reqId);
   } catch (err) {
-    // 发不出去 ⇒ 服务确实异常 ⇒ 立刻切到"显示车主电话"模式
-    setServiceState(false, '通知没能发出去，请直接拨打车主电话。');
+    // 投递当场失败 ⇒ 立即降级显示车主电话
+    resetButton();
     btnIcon.textContent = '📬';
     btnText.textContent = '通知车主挪车';
-    showFeedback('err', '⚠️', '没能发出去',
-      '请直接拨打车主电话联系车主，<br>给您添麻烦了。');
-  } finally {
-    sending = false;
-    btn.disabled = false;
+    showFallback('通知没能发出去，请直接拨打车主电话。');
   }
 }
 
 btn.addEventListener('click', sendNotify);
-checkHealth();
+// ★ 页面加载时不做任何健康检查预检：
+//   ntfy 通不通由这一次 POST 当场验证，轮询器活不活由 ACK 回执验证。
+//   这样既没有周期性心跳的固定开销，也不会因配额耗尽而误报服务异常。
 </script>
 </body>
 </html>
